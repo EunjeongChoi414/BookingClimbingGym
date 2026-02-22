@@ -1,0 +1,3 @@
+rootProject.name = 'BookingClimbingGym'
+
+include(':api', ':services', ':data-access', ':domain', ':common')
