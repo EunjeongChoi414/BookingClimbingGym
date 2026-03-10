@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':common')
 
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.3')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
 }
