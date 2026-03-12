@@ -1,3 +1,5 @@
+package com.project.data.email;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;

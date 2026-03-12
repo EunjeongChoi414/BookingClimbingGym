@@ -5,11 +5,14 @@ plugins {
 
 dependencies {
     implementation project(':services')
+    implementation project(':common')
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 
     // spring
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
     // test
+    testImplementation project(':common')
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 

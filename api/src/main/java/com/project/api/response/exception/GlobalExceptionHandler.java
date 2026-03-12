@@ -2,6 +2,7 @@ package com.project.api.response.exception;
 
 import com.project.api.response.BaseResponse;
 import com.project.api.response.ResponseService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,5 +16,10 @@ public class GlobalExceptionHandler {
     public BaseResponse<String> handleArgumentException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
         return responseService.getArgumentFailedResponse(message);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public BaseResponse<String> handleExpiredJwtException(ExpiredJwtException e) {
+        return responseService.getFailureResponse(ExceptionStatus.EXPIRED_TOKEN);
     }
 }

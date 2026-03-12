@@ -1,9 +1,11 @@
 dependencies {
     runtimeOnly project(':data-access')
     implementation project(':domain')
+    implementation project(':common')
 
     implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.3')
     implementation 'org.springframework:spring-context'
+    implementation 'org.springframework.security:spring-security-crypto'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

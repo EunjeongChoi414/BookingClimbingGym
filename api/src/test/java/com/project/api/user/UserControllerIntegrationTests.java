@@ -1,6 +1,8 @@
 package com.project.api.user;
 
 import com.project.api.user.dto.RegisterUserReq;
+import com.project.common.AuthToken;
+import com.project.common.Ticket;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class UserControllerIntegrationTests {
 
+    private static final String TEST_SECRET = "test-secret-key-for-testing-purposes-only-32c";
+    private static final String TEST_JWT_SECRET = "test-jwt-secret-key-for-testing-purposes-only-32";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -28,7 +33,7 @@ class UserControllerIntegrationTests {
     @Test
     @DisplayName("자동 로그인 - 성공")
     public void autoLogin_success() throws Exception {
-        var validToken = "validToken";
+        var validToken = AuthToken.issue("some-user-id", TEST_JWT_SECRET).getToken();
 
         mockMvc.perform(get("/app/users/auto-login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -56,11 +61,12 @@ class UserControllerIntegrationTests {
     @Test
     @DisplayName("유저 회원가입 - 성공")
     public void registerUser_success() throws Exception {
+        var ticket = Ticket.issue("test@example.com", TEST_SECRET).getToken();
         var req = new RegisterUserReq(
                 "test@example.com",
                 "examplepassword123",
                 "examplepassword123",
-                "validTicket");
+                ticket);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/app/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,11 +117,12 @@ class UserControllerIntegrationTests {
     @Test
     @DisplayName("유저 회원가입 - 비밀번호 확인이 틀림")
     public void registerUser_invalidPasswordCheck() throws Exception {
+        var ticket = Ticket.issue("test@example.com", TEST_SECRET).getToken();
         var req = new RegisterUserReq(
                 "test@example.com",
                 "originalPassword",
                 "differentPassword",
-                "validTicket");
+                ticket);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/app/users")
                         .contentType(MediaType.APPLICATION_JSON)
