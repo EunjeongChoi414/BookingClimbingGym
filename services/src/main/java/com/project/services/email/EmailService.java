@@ -3,47 +3,46 @@ package com.project.services.email;
 import com.project.common.SignUpTicket;
 import com.project.domain.email.EmailRepository;
 import com.project.domain.email.EmailSender;
+import com.project.domain.email.EmailVerification;
+import com.project.domain.exception.EmailCodeMismatchException;
+import com.project.domain.exception.NeedEmailVerificationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class EmailService {
     private final EmailRepository emailRepository;
     private final EmailSender emailSender;
-    private final String ticketSecret;
+    private final String secret;
 
     public EmailService(EmailRepository emailRepository, EmailSender emailSender,
-                        @Value("${ticket.secret}") String ticketSecret) {
+                        @Value("${ticket.secret}") String secret) {
         this.emailRepository = emailRepository;
         this.emailSender = emailSender;
-        this.ticketSecret = ticketSecret;
+        this.secret = secret;
     }
 
-    public void sendVerificationEmail(String email) {
-        String code =  UUID.randomUUID().toString().substring(0, 6);
-        emailSender.sendVerificationEmail(email, code);
-        emailRepository.save(email, code);
+    public void sendVerificationCode(String email) {
+        String code = EmailVerification.getVerificationCode();
+        emailSender.send(email, code);
+        emailRepository.add(email, code);
     }
 
     public String verifyEmail(String email, String code) {
-        Optional<String> sentCode = emailRepository.findByEmail(email);
-        if(sentCode.isPresent() && !sentCode.get().equals(code)) {
-           throw new RuntimeException("잘못된 이메일 코드입니다.");
+        String sentCode = emailRepository.findCodeByEmail(email);
+        if(!sentCode.equals(code)) {
+           throw new EmailCodeMismatchException();
         } else {
-            String ticket = SignUpTicket.issue(email, ticketSecret).getToken();
+            String ticket = SignUpTicket.issue(email, secret).getToken();
             emailRepository.delete(email);
             return ticket;
         }
     }
 
     public void checkIfEmailVerified(String ticket, String email) {
-        SignUpTicket parsedTicket = SignUpTicket.parse(ticket, ticketSecret);
+        SignUpTicket parsedTicket = SignUpTicket.parse(ticket, secret);
         if(!parsedTicket.getEmail().equals(email)) {
-            throw new RuntimeException("이메일 검증이 필요합니다.");
+            throw new NeedEmailVerificationException();
         }
     }
-
 }

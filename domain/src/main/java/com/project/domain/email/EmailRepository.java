@@ -3,9 +3,9 @@ package com.project.domain.email;
 import java.util.Optional;
 
 public interface EmailRepository {
-    void save(String email, String code);
+    void add(String email, String code);
 
-    Optional<String> findByEmail(String email);
+    String findCodeByEmail(String email);
 
     void delete(String email);
 }

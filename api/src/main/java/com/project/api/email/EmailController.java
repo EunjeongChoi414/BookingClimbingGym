@@ -22,7 +22,7 @@ public class EmailController {
     public BaseResponse<String> sendEmailVerificationCode(
             @RequestBody @Valid SendEmailVerificationCodeReq req) {
 
-        emailService.sendVerificationEmail(req.getEmail());
+        emailService.sendVerificationCode(req.getEmail());
 
         return responseService.getSuccessResponse();
     }

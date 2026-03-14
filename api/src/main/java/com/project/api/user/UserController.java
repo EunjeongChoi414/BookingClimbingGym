@@ -22,8 +22,7 @@ public class UserController {
 
     //유저 회원가입
     @PostMapping("")
-    public BaseResponse<RegisterUserRes> registerUser(
-            @RequestBody @Valid RegisterUserReq req){
+    public BaseResponse<RegisterUserRes> registerUser(@RequestBody @Valid RegisterUserReq req){
         emailService.checkIfEmailVerified(req.getTicket(), req.getEmail());
 
         var isEqual = req.getPassword().equals(req.getPasswordConfirm());

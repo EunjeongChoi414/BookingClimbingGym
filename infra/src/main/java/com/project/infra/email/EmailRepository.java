@@ -11,13 +11,13 @@ public class EmailRepository implements com.project.domain.email.EmailRepository
     private final Map<String, String> storage = new ConcurrentHashMap<>();
 
     @Override
-    public void save(String email, String code) {
+    public void add(String email, String code) {
         storage.put(email, code);
     }
 
     @Override
-    public Optional<String> findByEmail(String email) {
-        return Optional.ofNullable(storage.get(email));
+    public String findCodeByEmail(String email) {
+        return storage.get(email);
     }
 
     @Override
