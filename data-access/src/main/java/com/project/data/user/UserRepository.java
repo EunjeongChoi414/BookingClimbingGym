@@ -8,8 +8,8 @@ import java.util.Optional;
 @Repository
 public class UserRepository implements com.project.domain.user.UserRepository {
     @Override
-    public Optional<User> findById(String userId) {
-        return Optional.empty();
+    public User findById(String userId) {
+        return new User("", "");
     }
 
     @Override

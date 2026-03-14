@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @AllArgsConstructor
@@ -11,7 +12,5 @@ import java.time.LocalTime;
 public class UserBooking {
     private String id;
 
-    private LocalDate date;
-
-    private LocalTime startTime;
+    private LocalDateTime startDateTime;
 }

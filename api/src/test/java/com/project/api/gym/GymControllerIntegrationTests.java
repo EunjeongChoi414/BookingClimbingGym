@@ -4,6 +4,7 @@ import com.project.api.gym.dto.BusinessHours;
 import com.project.api.gym.dto.Pass;
 import com.project.api.gym.dto.RegisterGymReq;
 import com.project.api.gym.dto.VerifyBusinessReq;
+import com.project.common.AuthToken;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class GymControllerIntegrationTests {
+    private static final String TEST_JWT_SECRET = "test-jwt-secret-key-for-testing-purposes-only-32";
+    private static final String VALID_TOKEN = "Bearer " + AuthToken.issue("test-user-id", TEST_JWT_SECRET).getToken();
     @Autowired
     private MockMvc mockMvc;
 
@@ -110,12 +113,13 @@ class GymControllerIntegrationTests {
                 "gymAddress",
                 passes,
                 "02-2222-2222",
-                businessHours
+                businessHours,
+                100
         );
 
         mockMvc.perform(post("/app/gyms")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer test-token")
+                        .header("Authorization", VALID_TOKEN)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("true"))
@@ -142,7 +146,8 @@ class GymControllerIntegrationTests {
                 "gymAddress",
                 passes,
                 "02-2222-2222",
-                businessHours
+                businessHours,
+                100
         );
 
         mockMvc.perform(post("/app/gyms")
@@ -172,7 +177,8 @@ class GymControllerIntegrationTests {
                 "gymAddress",
                 new ArrayList<>(),
                 "02-2222-2222",
-                businessHours
+                businessHours,
+                100
         );
 
         mockMvc.perform(post("/app/gyms")

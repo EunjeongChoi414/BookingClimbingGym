@@ -6,22 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetGymCrowdednessReq {
-    @NotNull
-    @JsonFormat(pattern="yyyy-MM-dd")
-    private LocalDate date;
 
     @NotNull
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime startTime;
-
-    @NotNull
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime endTime;
+    @JsonFormat(pattern="yyyy-MM-ddTHH:mm")
+    private LocalDateTime dateTime;;
 }

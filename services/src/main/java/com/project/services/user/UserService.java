@@ -34,9 +34,13 @@ public class UserService {
     public String tryLoginUser(String token) {
         AuthToken parsedToken = AuthToken.parse(token, jwtSecret);
         String userId = parsedToken.getUserId();
-        userRepository.findById(userId).ifPresent(user -> {
-            user.setLastLoginAt(LocalDateTime.now());
-        });
+        User user = userRepository.findById(userId);
+        user.setLastLoginAt(LocalDateTime.now());
         return userId;
+    }
+
+    public String getUserIdFromToken(String token) {
+        AuthToken parsedToken = AuthToken.parse(token, jwtSecret);
+        return parsedToken.getUserId();
     }
 }

@@ -2,7 +2,7 @@ package com.project.api.user;
 
 import com.project.api.user.dto.RegisterUserReq;
 import com.project.common.AuthToken;
-import com.project.common.Ticket;
+import com.project.common.SignUpTicket;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +61,7 @@ class UserControllerIntegrationTests {
     @Test
     @DisplayName("유저 회원가입 - 성공")
     public void registerUser_success() throws Exception {
-        var ticket = Ticket.issue("test@example.com", TEST_SECRET).getToken();
+        var ticket = SignUpTicket.issue("test@example.com", TEST_SECRET).getToken();
         var req = new RegisterUserReq(
                 "test@example.com",
                 "examplepassword123",
@@ -117,7 +117,7 @@ class UserControllerIntegrationTests {
     @Test
     @DisplayName("유저 회원가입 - 비밀번호 확인이 틀림")
     public void registerUser_invalidPasswordCheck() throws Exception {
-        var ticket = Ticket.issue("test@example.com", TEST_SECRET).getToken();
+        var ticket = SignUpTicket.issue("test@example.com", TEST_SECRET).getToken();
         var req = new RegisterUserReq(
                 "test@example.com",
                 "originalPassword",

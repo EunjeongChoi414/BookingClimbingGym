@@ -10,6 +10,6 @@ import java.time.LocalDateTime;
 public class BookingDetail {
     public String id;
     public String userId;
-    public LocalDateTime startTime;
+    public LocalDateTime dateTime;
     public String passId;
 }

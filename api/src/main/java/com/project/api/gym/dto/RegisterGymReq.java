@@ -1,9 +1,6 @@
 package com.project.api.gym.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,5 +25,8 @@ public class RegisterGymReq {
 
     @Size(min = 7, max=7, message = "영업시간은 정확히 7개여야 합니다.")
     private List<BusinessHours> businessHours;
+
+    @Positive
+    private int maxCapacity;
 }
 
