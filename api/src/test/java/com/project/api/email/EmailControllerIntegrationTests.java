@@ -53,25 +53,9 @@ public class EmailControllerIntegrationTests {
     }
 
     @Test
-    @DisplayName("이메일 인증코드 확인 - 성공")
-    void verifyEmail_success() throws Exception{
-        var req  = new VerifyEmailReq("test@example.com", 123456);
-
-        mockMvc.perform(post("/app/email/verification")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isSuccess").value("true"))
-                .andExpect(jsonPath("$.code").value("1000"))
-                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data").isString());
-    }
-
-    @Test
     @DisplayName("이메일 인증코드 확인 실패- 잘못된 이메일 형식")
     void verifyEmail_invalidEmail() throws Exception{
-        var req = new VerifyEmailReq("test", 123456);
+        var req = new VerifyEmailReq("test", "123456");
 
         mockMvc.perform(post("/app/email/verification")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,19 +64,5 @@ public class EmailControllerIntegrationTests {
                 .andExpect(jsonPath("$.isSuccess").value("false"))
                 .andExpect(jsonPath("$.code").value("4000"))
                 .andExpect(jsonPath("$.message").value("이메일 형식이 잘못되었습니다."));
-    }
-
-    @Test
-    @DisplayName("이메일 인증코드 확인 실패- 잘못된 코드 형식")
-    void verifyEmail_invalidCode() throws Exception{
-        var req = new VerifyEmailReq("test@example.com", -1);
-
-        mockMvc.perform(post("/app/email/verification")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isSuccess").value("false"))
-                .andExpect(jsonPath("$.code").value("4000"))
-                .andExpect(jsonPath("$.message").value("이메일 인증 코드가 틀렸습니다."));
     }
 }

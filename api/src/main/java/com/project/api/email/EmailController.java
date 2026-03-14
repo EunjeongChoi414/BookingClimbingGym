@@ -31,7 +31,7 @@ public class EmailController {
     @PostMapping("/verification")
     public BaseResponse<String> verifyEmail (
             @RequestBody @Valid VerifyEmailReq req) {
-        String ticket = emailService.verifyEmail(req.getEmail(), String.valueOf(req.getCode()));
+        String ticket = emailService.verifyEmail(req.getEmail(), req.getCode());
 
         return responseService.getSuccessResponse(ticket);
     }
