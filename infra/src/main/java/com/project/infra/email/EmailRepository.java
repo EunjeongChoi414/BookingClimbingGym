@@ -1,4 +1,4 @@
-package com.project.data.email;
+package com.project.infra.email;
 
 import org.springframework.stereotype.Repository;
 

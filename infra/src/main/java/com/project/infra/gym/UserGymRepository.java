@@ -1,6 +1,5 @@
-package com.project.data.gym;
+package com.project.infra.gym;
 
-import com.project.domain.gym.Gym;
 import com.project.domain.gym.UserGym;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,5 @@
-package com.project.data.gym;
+package com.project.infra.gym;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

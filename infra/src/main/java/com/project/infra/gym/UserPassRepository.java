@@ -1,4 +1,4 @@
-package com.project.data.gym;
+package com.project.infra.gym;
 
 import com.project.domain.gym.UserPass;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package com.project.data.booking;
+package com.project.infra.booking;
 
 import com.project.domain.booking.Booking;
 import org.springframework.stereotype.Repository;

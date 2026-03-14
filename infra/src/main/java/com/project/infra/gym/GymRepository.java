@@ -1,12 +1,10 @@
-package com.project.data.gym;
+package com.project.infra.gym;
 
 import com.project.domain.gym.Gym;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository

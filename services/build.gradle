@@ -1,5 +1,5 @@
 dependencies {
-    runtimeOnly project(':data-access')
+    runtimeOnly project(':infra')
     implementation project(':domain')
     implementation project(':common')
 
