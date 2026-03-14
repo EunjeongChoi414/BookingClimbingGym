@@ -2,6 +2,7 @@ package com.project.domain.user;
 
 import jakarta.persistence.Entity;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -12,11 +13,11 @@ public class User {
     private final String password;
     private LocalDateTime lastLoginAt;
 
-    public User(String email, String password) {
+    public User(String email, String password, Clock clock) {
         this.id = UUID.randomUUID().toString();
         this.email = email;
         this.password = password;
-        this.lastLoginAt = LocalDateTime.now();
+        this.lastLoginAt = LocalDateTime.now(clock);
     }
 
     public String getId() {

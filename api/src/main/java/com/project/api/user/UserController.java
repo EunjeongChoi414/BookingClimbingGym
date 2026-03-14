@@ -22,31 +22,22 @@ public class UserController {
 
     //유저 회원가입
     @PostMapping("")
-    public BaseResponse<RegisterUserRes> registerUser(@RequestBody @Valid RegisterUserReq req){
+    public BaseResponse<RegisterUserRes> registerUser(@RequestBody @Valid RegisterUserReq req) {
         emailService.checkIfEmailVerified(req.getTicket(), req.getEmail());
 
-        var isEqual = req.getPassword().equals(req.getPasswordConfirm());
-        if(!isEqual){
-            return responseService.getFailureResponse(ExceptionStatus.PASSWORD_NOT_MATCH);
-        }
-        else
-        {
-            RegisteredUserInfo userInfo = userService.registerUser(req.getEmail(), req.getPassword());
-            var res = new RegisterUserRes(userInfo.jwt(), userInfo.userId());
-            return responseService.getSuccessResponse(res);
-        }
+        RegisteredUserInfo userInfo = userService.registerUser(
+                req.getEmail(), req.getPassword(), req.getPasswordConfirm());
+        var res = new RegisterUserRes(userInfo.jwt(), userInfo.userId());
+
+        return responseService.getSuccessResponse(res);
     }
 
     // 자동 로그인
     @GetMapping("/auto-login")
     public BaseResponse<String> autoLogin(
             @RequestHeader(value = "Authorization", required = false) String token
-    ){
-        if (token == null || !token.startsWith("Bearer ")) {
-            return responseService.getFailureResponse(ExceptionStatus.NEED_TO_SIGNUP);
-        }
-
-        String userId = userService.tryLoginUser(token.substring("Bearer ".length()));
+    ) {
+        String userId = userService.loginUser(token == null ? null : token.substring("Bearer ".length()));
 
         return responseService.getSuccessResponse(userId);
     }

@@ -20,6 +20,15 @@ public class ResponseService {
         );
     }
 
+    public <T> BaseResponse<T> getFailureResponse(String message) {
+        return new BaseResponse<>(
+                false,
+                2000,
+                message,
+                null
+        );
+    }
+
     public BaseResponse<String> getArgumentFailedResponse(String message) {
         return new BaseResponse<>(
                 false,

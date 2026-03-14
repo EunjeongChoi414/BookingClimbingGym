@@ -22,4 +22,9 @@ public class GlobalExceptionHandler {
     public BaseResponse<String> handleExpiredJwtException(ExpiredJwtException e) {
         return responseService.getFailureResponse(ExceptionStatus.EXPIRED_TOKEN);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public BaseResponse<String> handleDomainException(RuntimeException e) {
+        return responseService.getFailureResponse(e.getMessage());
+    }
 }

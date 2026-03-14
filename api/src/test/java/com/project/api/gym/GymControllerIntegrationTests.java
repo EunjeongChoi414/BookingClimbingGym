@@ -15,9 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class GymControllerIntegrationTests {
     private static final String TEST_JWT_SECRET = "test-jwt-secret-key-for-testing-purposes-only-32";
-    private static final String VALID_TOKEN = "Bearer " + AuthToken.issue("test-user-id", TEST_JWT_SECRET).getToken();
+    private static final String VALID_TOKEN = "Bearer " +
+            AuthToken.issue("test-user-id", TEST_JWT_SECRET, Clock.fixed(Instant.now(), ZoneId.systemDefault())).getToken();
     @Autowired
     private MockMvc mockMvc;
 

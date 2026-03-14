@@ -6,7 +6,9 @@ dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.3')
     implementation 'org.springframework:spring-context'
     implementation 'org.springframework.security:spring-security-crypto'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 
+    testImplementation project(':infra')
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.Date;
 
 public class AuthToken {
@@ -19,12 +20,12 @@ public class AuthToken {
         this.userId = userId;
     }
 
-    public static AuthToken issue(String userId, String secret) {
+    public static AuthToken issue(String userId, String secret, Clock clock) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         String token = Jwts.builder()
                 .claim(USER_ID_CLAIM, userId)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRY_MS))
+                .issuedAt(new Date(clock.millis()))
+                .expiration(new Date(clock.millis() + EXPIRY_MS))
                 .signWith(key)
                 .compact();
         return new AuthToken(token, userId);
