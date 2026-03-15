@@ -3,6 +3,7 @@ package com.project.services.user;
 import com.project.common.AuthToken;
 import com.project.domain.exception.NeedToLoginAgainException;
 import com.project.domain.exception.NeedToSignupException;
+import com.project.domain.exception.PasswordMismatchException;
 import com.project.domain.user.User;
 import com.project.domain.user.UserRepository;
 import com.project.services.user.model.RegisteredUserInfo;
@@ -39,6 +40,17 @@ class UserServiceTests {
         assertNotNull(userInfo);
         assertNotNull(userInfo.jwt());
         assertNotNull(userInfo.userId());
+    }
+
+    @Test
+    void registerUser_failsWhenPasswordMismatch() {
+        String email = "user@example.com";
+        String password = "password";
+        String passwordConfirm = "not-matched-password";
+
+        assertThrows(PasswordMismatchException.class, () -> {
+            sut.registerUser(email, password, passwordConfirm);
+        });
     }
 
     @Test

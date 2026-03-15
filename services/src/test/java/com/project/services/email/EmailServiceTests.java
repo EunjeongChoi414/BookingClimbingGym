@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmailServiceTests {
+    private static final String SECRET = "test-secret-key-that-is-long-enough-for-hmac";
 
     @Mock
     private EmailRepository emailRepository;
@@ -24,8 +25,6 @@ class EmailServiceTests {
     private EmailSender emailSender;
 
     private EmailService sut;
-
-    private static final String SECRET = "test-secret-key-that-is-long-enough-for-hmac";
 
     @BeforeEach
     void setUp() {

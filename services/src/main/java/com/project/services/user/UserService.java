@@ -32,8 +32,7 @@ public class UserService {
         this.clock = clock;
     }
 
-    public RegisteredUserInfo registerUser(
-            String email, String password, String passwordCheck) {
+    public RegisteredUserInfo registerUser(String email, String password, String passwordCheck) {
         var isEqual = password.equals(passwordCheck);
         if (!isEqual) throw new PasswordMismatchException();
 
