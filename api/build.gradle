@@ -13,6 +13,7 @@ dependencies {
 
     // test
     testImplementation project(':common')
+    testImplementation project(':domain')
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 

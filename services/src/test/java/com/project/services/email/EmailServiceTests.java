@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EmailServiceUnitTests {
+class EmailServiceTests {
 
     @Mock
     private EmailRepository emailRepository;

@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceUnitTests {
+class UserServiceTests {
     private static final String SECRET = "test-secret-key-that-is-long-enough-for-hmac";
     private final UserRepository userRepository = new com.project.infra.user.UserRepository();
     private final Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());

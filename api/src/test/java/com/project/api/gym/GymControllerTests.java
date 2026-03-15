@@ -5,6 +5,9 @@ import com.project.api.gym.dto.Pass;
 import com.project.api.gym.dto.RegisterGymReq;
 import com.project.api.gym.dto.VerifyBusinessReq;
 import com.project.common.AuthToken;
+import com.project.domain.user.User;
+import com.project.domain.user.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +28,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class GymControllerIntegrationTests {
+class GymControllerTests {
     private static final String TEST_JWT_SECRET = "test-jwt-secret-key-for-testing-purposes-only-32";
-    private static final String VALID_TOKEN = "Bearer " +
-            AuthToken.issue("test-user-id", TEST_JWT_SECRET, Clock.fixed(Instant.now(), ZoneId.systemDefault())).getToken();
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private String validToken;
+
+    @BeforeEach
+    void setUp() {
+        User user = new User("test@test.com", "password", Clock.systemDefaultZone());
+        userRepository.create(user);
+        validToken = "Bearer " + AuthToken.issue(user.getId(), TEST_JWT_SECRET, Clock.fixed(Instant.now(), ZoneId.systemDefault())).getToken();
+    }
 
     @Test
     @DisplayName("사업자 정보 인증하기")
@@ -93,10 +107,8 @@ class GymControllerIntegrationTests {
     @Test
     @DisplayName("암장 등록하기 - 성공")
     public void registerGym() throws Exception {
-        var pass = new Pass(
-                "5회 이용권", new BigDecimal(90000), 5, 90);
-        List<Pass> passes = new ArrayList<>();
-        passes.add(pass);
+        var pass = new Pass("5회 이용권", new BigDecimal(90000), 5, 90);
+        List<Pass> passes = List.of(pass);
 
         List<BusinessHours> businessHours = new ArrayList<>();
         businessHours.add(new BusinessHours(DayOfWeek.MONDAY, null, null));
@@ -113,12 +125,13 @@ class GymControllerIntegrationTests {
                 passes,
                 "02-2222-2222",
                 businessHours,
-                100
+                100,
+                1
         );
 
         mockMvc.perform(post("/app/gyms")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", VALID_TOKEN)
+                        .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("true"))
@@ -146,7 +159,8 @@ class GymControllerIntegrationTests {
                 passes,
                 "02-2222-2222",
                 businessHours,
-                100
+                100,
+                1
         );
 
         mockMvc.perform(post("/app/gyms")
@@ -177,7 +191,8 @@ class GymControllerIntegrationTests {
                 new ArrayList<>(),
                 "02-2222-2222",
                 businessHours,
-                100
+                100,
+                1
         );
 
         mockMvc.perform(post("/app/gyms")

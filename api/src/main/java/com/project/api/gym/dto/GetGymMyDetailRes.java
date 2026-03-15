@@ -25,7 +25,7 @@ public class GetGymMyDetailRes {
 
         List<UserBooking> bookings = new ArrayList<>();
         for (BookingModel b : userGymModel.bookings()) {
-            bookings.add(new UserBooking(b.id(), b.startDateTime()));
+            bookings.add(new UserBooking(b.id(), b.dateTime()));
         }
 
         return new GetGymMyDetailRes(passes, bookings);

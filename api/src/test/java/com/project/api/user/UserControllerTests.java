@@ -3,6 +3,8 @@ package com.project.api.user;
 import com.project.api.user.dto.RegisterUserReq;
 import com.project.common.AuthToken;
 import com.project.common.SignUpTicket;
+import com.project.domain.user.User;
+import com.project.domain.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class UserControllerIntegrationTests {
+class UserControllerTests {
 
     private static final String TEST_SECRET = "test-secret-key-for-testing-purposes-only-32c";
     private static final String TEST_JWT_SECRET = "test-jwt-secret-key-for-testing-purposes-only-32";
@@ -35,21 +37,26 @@ class UserControllerIntegrationTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-//    @Test
-//    @DisplayName("자동 로그인 - 성공")
-//    public void autoLogin_success() throws Exception {
-//        var validToken = AuthToken.issue("some-user-id", TEST_JWT_SECRET, fixedClock).getToken();
-//
-//        mockMvc.perform(get("/app/users/auto-login")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("Authorization", "Bearer " + validToken))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.isSuccess").value("true"))
-//                .andExpect(jsonPath("$.code").value("1000"))
-//                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
-//                .andExpect(jsonPath("$.data").isNotEmpty())
-//                .andExpect(jsonPath("$.data").isString());
-//    }
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    @DisplayName("자동 로그인 - 성공")
+    public void autoLogin_success() throws Exception {
+        User user = new User("test@test.com", "password", Clock.systemDefaultZone());
+        userRepository.create(user);
+        var validToken = AuthToken.issue(user.getId(), TEST_JWT_SECRET, fixedClock).getToken();
+
+        mockMvc.perform(get("/app/users/auto-login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + validToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isSuccess").value("true"))
+                .andExpect(jsonPath("$.code").value("1000"))
+                .andExpect(jsonPath("$.message").value("요청에 성공했습니다."))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isString());
+    }
 
     @Test
     @DisplayName("자동 로그인 - 토큰 없음")

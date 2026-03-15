@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class EmailControllerIntegrationTests {
+public class EmailControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -26,7 +26,7 @@ public class EmailControllerIntegrationTests {
 
     @Test
     @DisplayName("이메일 인증코드 발송 - 성공")
-    void sendEmailVerificationCode_success() throws Exception{
+    void sendEmailVerificationCode_success() throws Exception {
         var req = new SendEmailVerificationCodeReq("test@gmail.com");
 
         mockMvc.perform(post("/app/email/code")
@@ -40,7 +40,7 @@ public class EmailControllerIntegrationTests {
 
     @Test
     @DisplayName("이메일 인증코드 발송 - 잘못된 이메일 형식")
-    void sendEmailVerificationCode_invalidEmail() throws Exception{
+    void sendEmailVerificationCode_invalidEmail() throws Exception {
         var req = new SendEmailVerificationCodeReq("test");
 
         mockMvc.perform(post("/app/email/code")
@@ -54,7 +54,7 @@ public class EmailControllerIntegrationTests {
 
     @Test
     @DisplayName("이메일 인증코드 확인 실패- 잘못된 이메일 형식")
-    void verifyEmail_invalidEmail() throws Exception{
+    void verifyEmail_invalidEmail() throws Exception {
         var req = new VerifyEmailReq("test", "123456");
 
         mockMvc.perform(post("/app/email/verification")
