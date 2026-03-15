@@ -18,4 +18,14 @@ public class UserPassRepository implements com.project.domain.gym.UserPassReposi
     public UserPass findById(String id) {
         return storage.get(id);
     }
+
+    @Override
+    public void add(UserPass userPass) {
+        storage.put(userPass.getId(), userPass);
+    }
+
+    @Override
+    public void update(UserPass userPass) {
+        storage.put(userPass.getId(), userPass);
+    }
 }

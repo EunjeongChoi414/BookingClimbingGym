@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Getter
-public class BookingDetail {
+public class Booking {
     public String id;
     public String userId;
     public LocalDateTime dateTime;

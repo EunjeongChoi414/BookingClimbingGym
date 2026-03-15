@@ -12,7 +12,7 @@ public class GymRepository implements com.project.domain.gym.GymRepository {
     private final Map<String, Gym> storage = new ConcurrentHashMap<>();
 
     @Override
-    public void save(Gym gym) {
+    public void add(Gym gym) {
         storage.put(gym.getId(), gym);
     }
 
@@ -25,8 +25,7 @@ public class GymRepository implements com.project.domain.gym.GymRepository {
     public List<Gym> searchGyms(int page, int size, String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return storage.values().stream().toList();
-        }
-        else {
+        } else {
             return storage.values().stream()
                     .filter(gym -> gym.getName().toLowerCase().contains(keyword.toLowerCase()))
                     .skip((long) (page - 1) * size)

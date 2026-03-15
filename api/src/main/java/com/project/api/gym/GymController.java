@@ -5,8 +5,6 @@ import com.project.api.gym.dto.PayWithPassRes;
 import com.project.api.gym.dto.*;
 import com.project.api.response.BaseResponse;
 import com.project.api.response.ResponseService;
-import com.project.api.response.exception.ExceptionStatus;
-import com.project.services.booking.model.BookingDetailModel;
 import com.project.services.gym.GymService;
 import com.project.services.gym.model.*;
 import com.project.services.user.UserService;
@@ -44,7 +42,7 @@ public class GymController {
     public BaseResponse<String> paymentAccountVerification(
             @RequestHeader("Authorization") String token,
             @RequestBody @Valid PaymentAccountVerificationReq req
-    ){
+    ) {
         gymService.verifyBusinessRepresentative(
                 req.getTicket(), req.getAccountHolderName(), req.getBankName(), req.getAccountNumber());
 
@@ -55,31 +53,13 @@ public class GymController {
     @PostMapping("")
     public BaseResponse<String> registerGym(
             @RequestHeader("Authorization") String token,
-            @RequestBody @Valid RegisterGymReq req){
-
-        // 영업시간 검증
-        for (BusinessHours bh : req.getBusinessHours()) {
-            var start = bh.getStartTime();
-            var end = bh.getEndTime();
-            if (start == null && end == null) continue;
-            if (start == null || end == null || end.isBefore(start)) {
-                return responseService.getFailureResponse(ExceptionStatus.INVALID_BUSINESS_HOURS);
-            }
-        }
-
-        List<BusinessHoursModel> businessHoursInputs = new ArrayList<>();
-        for (BusinessHours bh : req.getBusinessHours()) {
-            businessHoursInputs.add(new BusinessHoursModel(bh.getDay(), bh.getStartTime(), bh.getEndTime()));
-        }
-
-        List<PassModel> passInputs = new ArrayList<>();
-        for (Pass p : req.getPasses()) {
-            passInputs.add(new PassModel(p.getName(), p.getPrice(), p.getMaxUses(), p.getValidDays()));
-        }
+            @RequestBody @Valid RegisterGymReq req) {
+        List<BusinessHoursModel> businessHoursModels = GymDtoMapper.toBusinessHoursModels(req.getBusinessHours());
+        List<PassModel> passInputs = GymDtoMapper.toPassModels(req.getPasses());
 
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         String gymId = gymService.registerGym(req.getGymName(), req.getGymAddress(), req.getContact(),
-                businessHoursInputs, passInputs, userId, req.getMaxCapacity());
+                businessHoursModels, passInputs, userId, req.getMaxCapacity(), req.getCancellationNoticeDays());
 
         return responseService.getSuccessResponse(gymId);
     }
@@ -95,10 +75,7 @@ public class GymController {
 
         List<Gym> gyms = new ArrayList<>();
         gymModels.forEach(gym -> {
-            List<BusinessHours> businessHours = new ArrayList<>();
-            for (BusinessHoursModel bhModel : gym.businessHours()) {
-                businessHours.add(new  BusinessHours(bhModel.getDay(), bhModel.getStartTime(), bhModel.getEndTime()));
-            }
+            List<BusinessHours> businessHours = GymDtoMapper.toBusinessHoursDtos(gym.businessHours());
             gyms.add(new Gym(gym.name(), businessHours, gym.currentCrowdLevel(), gym.address()));
         });
 
@@ -109,17 +86,11 @@ public class GymController {
     @GetMapping("/{gymId}")
     public BaseResponse<GetGymDetailRes> getGymDetail(
             @RequestHeader("Authorization") String token,
-            @PathVariable String gymId){
+            @PathVariable String gymId) {
 
         GymDetailModel gymDetail = gymService.getGymDetail(gymId);
-        List<BusinessHours> businessHours = new ArrayList<>();
-        for (BusinessHoursModel hours : gymDetail.businessHours()) {
-            businessHours.add(new BusinessHours(hours.getDay(), hours.getStartTime(), hours.getEndTime()));
-        }
-        List<Pass> passes = new ArrayList<>();
-        for (PassModel p : gymDetail.passes()) {
-            passes.add(new Pass(p.getName(), p.getPrice(), p.getMaxUses(), p.getValidDays()));
-        }
+        List<BusinessHours> businessHours = GymDtoMapper.toBusinessHoursDtos(gymDetail.businessHours());
+        List<Pass> passes = GymDtoMapper.toPassDtos(gymDetail.passes());
 
         var res = new GetGymDetailRes(
                 gymDetail.name(),
@@ -137,7 +108,7 @@ public class GymController {
     public BaseResponse<GetGymMyDetailRes> getGymMyDetail(
             @RequestHeader("Authorization") String token,
             @PathVariable String gymId
-    ){
+    ) {
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         UserGymModel userGymModel = gymService.getUserInfoFromGym(gymId, userId);
 
@@ -149,7 +120,7 @@ public class GymController {
     public BaseResponse<String> getGymCrowdedness(
             @RequestHeader("Authorization") String token,
             @PathVariable String gymId,
-            @RequestBody @Valid GetGymCrowdednessReq req){
+            @RequestBody @Valid GetGymCrowdednessReq req) {
 
         String crowdedness = gymService.getCrowdedness(gymId, req.getDateTime());
 
@@ -160,14 +131,11 @@ public class GymController {
     @GetMapping("/{gymId}/bookings")
     public BaseResponse<GetGymBookingsRes> getGymBookings(
             @RequestHeader("Authorization") String token,
-            @PathVariable String gymId){
+            @PathVariable String gymId) {
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
-        List<BookingDetailModel> bookingModels = gymService.getGymBookings(userId, gymId);
+        List<BookingModel> bookingModels = gymService.getGymBookings(userId, gymId);
 
-        List<BookingDetail> bookings = new ArrayList<>();
-        bookingModels.forEach(b -> {
-            bookings.add(new BookingDetail(b.id(), b.userId(), b.dateTime(), b.passId()));
-        });
+        List<Booking> bookings = GymDtoMapper.toBookingDtos(bookingModels);
 
         return responseService.getSuccessResponse(new GetGymBookingsRes(bookings));
     }
@@ -177,7 +145,7 @@ public class GymController {
     public BaseResponse<PayWithPassRes> payWithPass(
             @RequestHeader("Authorization") String token,
             @PathVariable String gymId,
-            @RequestBody @Valid PayWithPassReq req){
+            @RequestBody @Valid PayWithPassReq req) {
 
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
 

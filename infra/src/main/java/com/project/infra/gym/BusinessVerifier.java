@@ -12,7 +12,7 @@ public class BusinessVerifier implements com.project.domain.gym.BusinessVerifier
     }
 
     @Override
-    public void verifyBusinessRepresentative(String accountHolderName, String bankName, String accountNumber) {
+    public void verifyBusinessAccount(String representativeName, String accountHolderName, String bankName, String accountNumber) {
 
     }
 }

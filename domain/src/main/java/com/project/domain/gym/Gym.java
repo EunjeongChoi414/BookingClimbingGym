@@ -17,12 +17,15 @@ public class Gym {
     private final String contact;
     private final List<BusinessHours> businessHours;
     private final List<Pass> passes;
-    private int maxCapacity;
+    private final int cancellationNoticeDays;
+    private final int maxCapacity;
     @ManyToOne
     private final User owner;
 
     public Gym(String name, String address, String contact,
-              List<BusinessHours> businessHours, List<Pass> passes, User owner, int maxCapacity) {
+               List<BusinessHours> businessHours, List<Pass> passes, User owner,
+               int maxCapacity, int cancellationNoticeDays) {
+
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.address = address;
@@ -30,26 +33,56 @@ public class Gym {
         this.businessHours = businessHours;
         this.passes = passes;
         this.owner = owner;
+        this.maxCapacity = maxCapacity;
+        this.cancellationNoticeDays = cancellationNoticeDays;
+        owner.setIsManager(true);
     }
 
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public String getAddress() { return address; }
-    public String getContact() { return contact; }
-    public List<BusinessHours> getBusinessHours() { return businessHours; }
-    public List<Pass> getPasses() { return passes; }
-    public User getOwner() { return owner; }
-    public int getMaxCapacity() { return maxCapacity; }
+    public String getId() {
+        return id;
+    }
 
-    public static Crowdedness getCrowdedness(int maxCapacity, int bookingCount) {
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public List<BusinessHours> getBusinessHours() {
+        return businessHours;
+    }
+
+    public List<Pass> getPasses() {
+        return passes;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public int getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public int getCancellationNoticeDays() {
+        return cancellationNoticeDays;
+    }
+
+    public CrowdednessLevel getCrowdedness(int bookingCount) {
         int chunk = maxCapacity / 6;
 
         if (bookingCount > chunk * 4) {
-            return Crowdedness.BUSY;
+            return CrowdednessLevel.BUSY;
         } else if (bookingCount > chunk * 2) {
-            return Crowdedness.MODERATE;
+            return CrowdednessLevel.MODERATE;
         } else {
-            return Crowdedness.QUIET;
+            return CrowdednessLevel.QUIET;
         }
     }
 }

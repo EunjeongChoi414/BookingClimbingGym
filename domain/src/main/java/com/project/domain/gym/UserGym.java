@@ -1,5 +1,6 @@
 package com.project.domain.gym;
 
+import com.project.domain.booking.Booking;
 import com.project.domain.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -21,7 +22,7 @@ public class UserGym {
     private final Gym gym;
 
     private final List<UserPass> passes;
-    private final List<UserBooking> bookings;
+    private final List<Booking> bookings;
 
     public UserGym(User user, Gym gym) {
         this.id = UUID.randomUUID().toString();
@@ -31,9 +32,23 @@ public class UserGym {
         this.bookings = new ArrayList<>();
     }
 
-    public String getId() { return id; }
-    public User getUser() { return user; }
-    public Gym getGym() { return gym; }
-    public List<UserPass> getPasses() { return passes; }
-    public List<UserBooking> getBookings() { return bookings; }
+    public String getId() {
+        return id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public Gym getGym() {
+        return gym;
+    }
+
+    public List<UserPass> getPasses() {
+        return passes;
+    }
+
+    public List<Booking> getBookings() {
+        return bookings;
+    }
 }

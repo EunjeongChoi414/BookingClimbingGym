@@ -6,11 +6,11 @@ import com.project.domain.booking.BookingRepository;
 import com.project.domain.gym.*;
 import com.project.domain.user.User;
 import com.project.domain.user.UserRepository;
-import com.project.services.booking.model.BookingDetailModel;
 import com.project.services.gym.model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,12 +26,13 @@ public class GymService {
     private final UserPassRepository userPassRepository;
     private final BusinessVerifier businessVerifier;
     private final String jwtSecret;
+    private final Clock clock;
 
     public GymService(
             @Value("${jwt.secret}") String jwtSecret,
             GymRepository gymRepository, UserRepository userRepository,
             UserGymRepository userGymRepository, BookingRepository bookingRepository,
-            UserPassRepository userPassRepository, BusinessVerifier businessVerifier) {
+            UserPassRepository userPassRepository, BusinessVerifier businessVerifier, Clock clock) {
         this.jwtSecret = jwtSecret;
         this.gymRepository = gymRepository;
         this.userRepository = userRepository;
@@ -39,59 +40,43 @@ public class GymService {
         this.bookingRepository = bookingRepository;
         this.userPassRepository = userPassRepository;
         this.businessVerifier = businessVerifier;
+        this.clock = clock;
     }
 
     public String registerGym(String name, String address, String contact,
                               List<BusinessHoursModel> businessHours,
-                              List<PassModel> passes, String userId, int maxCapacity) {
+                              List<PassModel> passes, String userId, int maxCapacity,
+                              int cancellationNoticeDays) {
         User owner = userRepository.findById(userId);
 
-        List<BusinessHours> domainBusinessHours = businessHours.stream()
-                .map(bh -> new BusinessHours(bh.getDay(), bh.getStartTime(), bh.getEndTime()))
-                .toList();
+        List<BusinessHours> domainBusinessHours = GymMapper.toBusinessHoursDomain(businessHours);
+        List<Pass> domainPasses = GymMapper.toPassDomain(passes);
 
-        List<Pass> domainPasses = passes.stream()
-                .map(p -> new Pass(p.getName(), p.getPrice(), p.getMaxUses(), p.getValidDays()))
-                .toList();
-
+        BusinessHours.validate(domainBusinessHours);
         Gym gym = new Gym(
-                name, address, contact, domainBusinessHours, domainPasses, owner, maxCapacity);
-        gymRepository.save(gym);
+                name, address, contact, domainBusinessHours, domainPasses, owner,
+                maxCapacity, cancellationNoticeDays);
+        gymRepository.add(gym);
 
-        //유저를 관리자로 만든다.
         return gym.getId();
     }
 
     public GymDetailModel getGymDetail(String gymId) {
         Gym gym = gymRepository.findById(gymId);
+        List<BusinessHoursModel> businessHoursModels = GymMapper.toBusinessHoursModels(gym.getBusinessHours());
+        List<PassModel> passModels = GymMapper.toPassModels(gym.getPasses());
+        String currentCrowdedness = getCurrentCrowdednessLevel(gymId);
 
-        List<BusinessHoursModel> businessHoursModels = new ArrayList<>();
-        for (BusinessHours hours : gym.getBusinessHours()) {
-            businessHoursModels.add(new BusinessHoursModel(hours.getDay(), hours.getStartTime(), hours.getEndTime()));
-        }
-        List<PassModel> passModels = new ArrayList<>();
-        for (Pass p : gym.getPasses()) {
-            passModels.add(new PassModel(p.getName(), p.getPrice(), p.getMaxUses(), p.getValidDays()));
-        }
-
-        return new GymDetailModel(gym.getName(), businessHoursModels, "Quiet", gym.getAddress(),
-                passModels, gym.getContact());
+        return new GymDetailModel(
+                gym.getName(), businessHoursModels, currentCrowdedness,
+                gym.getAddress(), passModels, gym.getContact());
     }
 
     public UserGymModel getUserInfoFromGym(String gymId, String userId) {
         UserGym userGym = userGymRepository.findByIds(gymId, userId);
 
-        List<UserPassModel> passModels = new ArrayList<>();
-        for (UserPass p : userGym.getPasses()) {
-            Pass pass = p.getPass();
-            passModels.add(new UserPassModel(
-                    pass.getId(), pass.getName(),p.getValidFrom(), p.getValidUntil(), p.getRemainingUses()));
-        }
-
-        List<UserBookingModel> bookingModels = new ArrayList<>();
-        for (UserBooking b : userGym.getBookings()) {
-            bookingModels.add(new UserBookingModel(b.getId(), b.getStartDateTime()));
-        }
+        List<UserPassModel> passModels = GymMapper.toUserPassModels(userGym.getPasses());
+        List<BookingModel> bookingModels = GymMapper.toBookingModels(userGym.getBookings());
 
         return new UserGymModel(passModels, bookingModels);
     }
@@ -101,53 +86,42 @@ public class GymService {
 
         List<GymPreviewModel> gyms = new ArrayList<>();
         searchedGyms.forEach(gym -> {
-            List<BusinessHoursModel> businessHoursModels = new ArrayList<>();
-
-            for (BusinessHours hours : gym.getBusinessHours()) {
-                businessHoursModels.add(new BusinessHoursModel(hours.getDay(), hours.getStartTime(), hours.getEndTime()));
-            }
-            gyms.add(new GymPreviewModel(gym.getName(), businessHoursModels, "Quiet", gym.getAddress()));
+            List<BusinessHoursModel> businessHoursModels = GymMapper.toBusinessHoursModels(gym.getBusinessHours());
+            gyms.add(new GymPreviewModel(
+                    gym.getName(), businessHoursModels, getCurrentCrowdednessLevel(gym.getId()), gym.getAddress()));
         });
 
         return gyms;
     }
 
     public BookedWithPassModel bookGymWithPass(
-            String userId, String gymId, String passId, LocalDateTime startDateTime){
-        UserPass userPass = userPassRepository.findById(passId);
-        if(!userPass.getUser().getId().equals(userId)){
-            throw new RuntimeException("유저의 패스가 아닙니다.");
-        }
-        userPass.isValid();
+            String userId, String gymId, String userPassId, LocalDateTime startDateTime) {
+        UserPass userPass = userPassRepository.findById(userPassId);
+        userPass.validate(clock);
 
         Gym gym = gymRepository.findById(gymId);
-        Booking booking = new Booking(userId, gym, passId, startDateTime);
+        Booking booking = new Booking(userId, gym, userPassId, startDateTime, userPass, clock);
         bookingRepository.add(booking);
 
-        userPass.usePass();
         return new BookedWithPassModel(booking.getId(), userPass.getRemainingUses(), booking.getQrToken());
     }
 
-    public List<BookingDetailModel> getGymBookings(String userId, String gymId){
+    public List<BookingModel> getGymBookings(String userId, String gymId) {
         Gym gym = gymRepository.findById(gymId);
-        if (!gym.getOwner().getId().equals(userId)) {
+        if (!gym.getOwner().getId().equals(userId)) { //api 레벨 체크로 리팩토링
             throw new RuntimeException("권한이 없습니다.");
         }
 
         List<Booking> gymBookings = bookingRepository.getAllBy(gymId);
-        List<BookingDetailModel> models = new ArrayList<>();
-        gymBookings.forEach(booking -> {
-            models.add(new BookingDetailModel(booking.getId(), booking.getUserId(), booking.getBookedDateTime(), booking.getPassId()));
-        });
 
-        return models;
+        return GymMapper.toBookingModels(gymBookings);
     }
 
     public String getCrowdedness(String gymId, LocalDateTime dateTime) {
         Gym gym = gymRepository.findById(gymId);
-        int bookingCount = bookingRepository.getBookingCount(gymId, dateTime);
-        Crowdedness crowdedness  = Gym.getCrowdedness(gym.getMaxCapacity(), bookingCount);
-        return crowdedness.toString();
+        int bookingCount = bookingRepository.getGymBookingCount(gymId, dateTime);
+        CrowdednessLevel level = gym.getCrowdedness(bookingCount);
+        return level.toString();
     }
 
     public String verifyBusiness(
@@ -160,14 +134,17 @@ public class GymService {
 
     public void verifyBusinessRepresentative(
             String ticket, String accountHolderName, String bankName, String accountNumber) {
-        // 사업자 정보 인증되었는지 확인하기
         BusinessRegistrationTicket parsedTicket = BusinessRegistrationTicket.parse(ticket, jwtSecret);
 
-        // 이름이 같은지 확인한다.
-        if(!parsedTicket.getRepresentativeName().equals(accountHolderName)) {
-            throw new RuntimeException("사업자와 계좌 소유주의 이름이 같아야 합니다.");
-        }
-        // 실제로 존재하는 계좌인지 확인한다
-        businessVerifier.verifyBusinessRepresentative(accountHolderName, bankName, accountNumber);
+        businessVerifier.verifyBusinessAccount(
+                parsedTicket.getRepresentativeName(), accountHolderName, bankName, accountNumber);
+    }
+
+    private String getCurrentCrowdednessLevel(String gymId) {
+        int count = bookingRepository.getGymBookingCount(gymId, LocalDateTime.now(clock));
+        Gym gym = gymRepository.findById(gymId);
+        CrowdednessLevel crowdedness = gym.getCrowdedness(count);
+
+        return crowdedness.toString();
     }
 }

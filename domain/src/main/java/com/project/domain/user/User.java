@@ -12,12 +12,14 @@ public class User {
     private final String email;
     private final String password;
     private LocalDateTime lastLoginAt;
+    private boolean isManager;
 
     public User(String email, String password, Clock clock) {
         this.id = UUID.randomUUID().toString();
         this.email = email;
         this.password = password;
         this.lastLoginAt = LocalDateTime.now(clock);
+        this.isManager = false;
     }
 
     public String getId() {
@@ -38,5 +40,13 @@ public class User {
 
     public void setLastLoginAt(LocalDateTime lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
+    }
+
+    public boolean getIsManager() {
+        return isManager;
+    }
+
+    public void setIsManager(boolean isManager) {
+        this.isManager = isManager;
     }
 }

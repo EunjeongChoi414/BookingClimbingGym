@@ -1,6 +1,6 @@
 package com.project.domain.gym;
 
-public enum Crowdedness {
+public enum CrowdednessLevel {
     QUIET,
     MODERATE,
     BUSY

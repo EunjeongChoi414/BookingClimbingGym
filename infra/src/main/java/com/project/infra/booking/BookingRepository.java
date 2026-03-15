@@ -25,10 +25,10 @@ public class BookingRepository implements com.project.domain.booking.BookingRepo
     }
 
     @Override
-    public int getBookingCount(String gymId, LocalDateTime dateTime) {
+    public int getGymBookingCount(String gymId, LocalDateTime dateTime) {
         long count = storage.values().stream()
                 .filter(booking -> booking.getGym().getId().equals(gymId)
-                    && booking.getBookedDateTime().isEqual(dateTime))
+                        && booking.getBookedDateTime().isEqual(dateTime))
                 .count();
         return (int) count;
     }

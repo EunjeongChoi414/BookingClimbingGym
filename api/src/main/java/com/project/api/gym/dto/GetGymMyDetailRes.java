@@ -1,6 +1,6 @@
 package com.project.api.gym.dto;
 
-import com.project.services.gym.model.UserBookingModel;
+import com.project.services.gym.model.BookingModel;
 import com.project.services.gym.model.UserGymModel;
 import com.project.services.gym.model.UserPassModel;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ public class GetGymMyDetailRes {
     private List<UserPass> passes;
     private List<UserBooking> bookings;
 
-    public static GetGymMyDetailRes from(UserGymModel  userGymModel) {
+    public static GetGymMyDetailRes from(UserGymModel userGymModel) {
         List<UserPass> passes = new ArrayList<>();
         for (UserPassModel p : userGymModel.pass()) {
             passes.add(new UserPass(
@@ -24,7 +24,7 @@ public class GetGymMyDetailRes {
         }
 
         List<UserBooking> bookings = new ArrayList<>();
-        for (UserBookingModel b : userGymModel.bookings()) {
+        for (BookingModel b : userGymModel.bookings()) {
             bookings.add(new UserBooking(b.id(), b.startDateTime()));
         }
 
