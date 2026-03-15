@@ -10,10 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserPassRepository implements com.project.domain.gym.UserPassRepository {
     private final Map<String, UserPass> storage = new ConcurrentHashMap<>();
 
-    public void save(UserPass userPass) {
-        storage.put(userPass.getId(), userPass);
-    }
-
     @Override
     public UserPass findById(String id) {
         return storage.get(id);
