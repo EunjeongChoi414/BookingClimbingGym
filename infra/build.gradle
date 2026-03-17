@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation project(':domain')
 
+    implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.3')
     implementation 'org.springframework:spring-context'
 
     testImplementation 'org.junit.jupiter:junit-jupiter'

@@ -10,5 +10,5 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class GetGymBookingsRes {
-    private List<BookingDetail> bookings;
+    private List<Booking> bookings;
 }

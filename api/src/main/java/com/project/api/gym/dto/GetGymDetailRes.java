@@ -9,8 +9,6 @@ import java.util.List;
 @Getter
 public class GetGymDetailRes {
     private String name;
-    private List<String> photos;
-    private boolean isOpen;
     private List<BusinessHours> businessHours;
     private String isBusy;
     private String address;

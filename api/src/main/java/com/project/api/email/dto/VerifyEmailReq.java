@@ -17,6 +17,6 @@ public class VerifyEmailReq {
     @NotBlank
     String email;
 
-    @Positive(message="이메일 인증 코드가 틀렸습니다.")
-    int code;
+    @NotBlank(message="이메일 인증 코드가 틀렸습니다.")
+    String code;
 }

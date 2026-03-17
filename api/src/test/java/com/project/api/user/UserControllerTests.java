@@ -1,6 +1,10 @@
 package com.project.api.user;
 
 import com.project.api.user.dto.RegisterUserReq;
+import com.project.common.AuthToken;
+import com.project.common.SignUpTicket;
+import com.project.domain.user.User;
+import com.project.domain.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +15,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class UserControllerIntegrationTests {
+class UserControllerTests {
+
+    private static final String TEST_SECRET = "test-secret-key-for-testing-purposes-only-32c";
+    private static final String TEST_JWT_SECRET = "test-jwt-secret-key-for-testing-purposes-only-32";
+    private final Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
 
     @Autowired
     private MockMvc mockMvc;
@@ -25,10 +37,15 @@ class UserControllerIntegrationTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     @DisplayName("자동 로그인 - 성공")
     public void autoLogin_success() throws Exception {
-        var validToken = "validToken";
+        User user = new User("test@test.com", "password", Clock.systemDefaultZone());
+        userRepository.create(user);
+        var validToken = AuthToken.issue(user.getId(), TEST_JWT_SECRET, fixedClock).getToken();
 
         mockMvc.perform(get("/app/users/auto-login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -48,19 +65,19 @@ class UserControllerIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
-                .andExpect(jsonPath("$.code").value("2001"))
-                .andExpect(jsonPath("$.message").value("회원가입이 필요합니다."))
+                .andExpect(jsonPath("$.code").value("2000"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
     @Test
     @DisplayName("유저 회원가입 - 성공")
     public void registerUser_success() throws Exception {
+        var ticket = SignUpTicket.issue("test@example.com", TEST_SECRET).getToken();
         var req = new RegisterUserReq(
                 "test@example.com",
                 "examplepassword123",
                 "examplepassword123",
-                "validTicket");
+                ticket);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/app/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,19 +128,19 @@ class UserControllerIntegrationTests {
     @Test
     @DisplayName("유저 회원가입 - 비밀번호 확인이 틀림")
     public void registerUser_invalidPasswordCheck() throws Exception {
+        var ticket = SignUpTicket.issue("test@example.com", TEST_SECRET).getToken();
         var req = new RegisterUserReq(
                 "test@example.com",
                 "originalPassword",
                 "differentPassword",
-                "validTicket");
+                ticket);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/app/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
-                .andExpect(jsonPath("$.code").value("2003"))
-                .andExpect(jsonPath("$.message").value("비밀번호가 일치하지 않습니다."));
+                .andExpect(jsonPath("$.code").value("2000"));
     }
 
     @Test

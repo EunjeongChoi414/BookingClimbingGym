@@ -10,6 +10,7 @@ public enum ExceptionStatus {
     INVALID_EMAIL_CODE_VERIFICATION(false, 2000, "코드가 일치하지 않습니다"),
     NEED_TO_SIGNUP(false, 2001, "회원가입이 필요합니다."),
     NEED_TO_LOGIN(false, 2002, "로그인이 필요합니다."),
+    EXPIRED_TOKEN(false, 2006, "토큰이 만료되었습니다."),
 
     //user
     PASSWORD_NOT_MATCH(false, 2003, "비밀번호가 일치하지 않습니다."),
