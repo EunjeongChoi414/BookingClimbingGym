@@ -11,7 +11,7 @@ and book sessions, while gym managers can register their venues, manage capacity
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Testing](#testing)
-- [ToDo](#todo)
+- [To Do](#to-do)
 
 ---
 
@@ -94,7 +94,7 @@ Use Spring Boot Test with `MockMvc` and real in-memory repositories wired togeth
 | `GymControllerTests`   | `POST /app/gyms`, business verification endpoints      |
 | `EmailControllerTests` | `POST /app/email/code`, `POST /app/email/verification` |
 
-## ToDo
+## To Do
 
 ### Features to Add
 
