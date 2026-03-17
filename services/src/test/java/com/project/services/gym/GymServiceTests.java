@@ -11,23 +11,37 @@ import com.project.services.gym.model.GymDetailModel;
 import com.project.services.gym.model.PassModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class GymServiceTests {
     private static final String SECRET = "test-secret-key-that-is-long-enough-for-hmac";
-    private final GymRepository gymRepository = new com.project.infra.gym.GymRepository();
-    private final UserRepository userRepository = new com.project.infra.user.UserRepository();
-    private final UserGymRepository userGymRepository = new com.project.infra.gym.UserGymRepository();
-    private final BookingRepository bookingRepository = new com.project.infra.booking.BookingRepository();
-    private final UserPassRepository userPassRepository = new com.project.infra.gym.UserPassRepository();
-    private final BusinessVerifier businessVerifier = new com.project.infra.gym.BusinessVerifier();
     private final Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+
+    @Mock
+    private GymRepository gymRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private UserGymRepository userGymRepository;
+    @Mock
+    private BookingRepository bookingRepository;
+    @Mock
+    private UserPassRepository userPassRepository;
+    @Mock
+    private BusinessVerifier businessVerifier;
 
     private GymService sut;
 
@@ -49,6 +63,7 @@ class GymServiceTests {
         int maxCap = 300;
         User user = createUser();
         int cancellationNoticeDays = 1;
+        when(userRepository.findById(user.getId())).thenReturn(user);
 
         String gymId = sut.registerGym(name, address, contact, businessHours, passes, user.getId(), maxCap, cancellationNoticeDays);
 
@@ -58,6 +73,7 @@ class GymServiceTests {
     @Test
     void getGymDetail() {
         Gym gym = createGym();
+        when(gymRepository.findById(gym.getId())).thenReturn(gym);
 
         GymDetailModel gymDetailModel = sut.getGymDetail(gym.getId());
 
@@ -74,7 +90,8 @@ class GymServiceTests {
         LocalDate validFrom = LocalDate.now(fixedClock);
         LocalDateTime bookedAt = LocalDateTime.now(fixedClock).plusDays(2);
         UserPass userPass = new UserPass(gym.getPasses().get(0), user, validFrom);
-        userPassRepository.add(userPass);
+        when(userPassRepository.findById(userPass.getId())).thenReturn(userPass);
+        when(gymRepository.findById(gym.getId())).thenReturn(gym);
 
         BookedWithPassModel result = sut.bookGymWithPass(user.getId(), gym.getId(), userPass.getId(), bookedAt);
 
@@ -91,7 +108,7 @@ class GymServiceTests {
         LocalDate validFrom = LocalDate.now(fixedClock).minusDays(200);
         LocalDateTime bookedAt = LocalDateTime.now(fixedClock).plusDays(2);
         UserPass userPass = new UserPass(gym.getPasses().get(0), user, validFrom);
-        userPassRepository.add(userPass);
+        when(userPassRepository.findById(userPass.getId())).thenReturn(userPass);
 
         assertThrows(InvalidPassException.class, () -> {
             sut.bookGymWithPass(user.getId(), gym.getId(), userPass.getId(), bookedAt);
@@ -99,9 +116,7 @@ class GymServiceTests {
     }
 
     private User createUser() {
-        User user = new User("user@gmail.com", "password", fixedClock);
-        userRepository.create(user);
-        return user;
+        return new User("user@gmail.com", "password", fixedClock);
     }
 
     private Gym createGym() {
@@ -116,9 +131,7 @@ class GymServiceTests {
         int cancellationNoticeDays = 1;
         User owner = createUser();
 
-        Gym gym = new Gym(name, address, contact, businessHours, passes,
+        return new Gym(name, address, contact, businessHours, passes,
                 owner, maxCap, cancellationNoticeDays);
-        gymRepository.add(gym);
-        return gym;
     }
 }
