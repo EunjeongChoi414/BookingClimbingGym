@@ -12,5 +12,5 @@ public interface BookingRepository {
 
     void delete(Booking booking);
 
-    Booking findById(String id);
+    Booking getById(String id);
 }

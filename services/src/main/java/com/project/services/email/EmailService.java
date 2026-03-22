@@ -1,9 +1,9 @@
 package com.project.services.email;
 
 import com.project.common.SignUpTicket;
+import com.project.domain.email.Email;
 import com.project.domain.email.EmailRepository;
 import com.project.domain.email.EmailSender;
-import com.project.domain.email.EmailVerification;
 import com.project.domain.exception.EmailCodeMismatchException;
 import com.project.domain.exception.NeedEmailVerificationException;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,25 +23,26 @@ public class EmailService {
     }
 
     public void sendVerificationCode(String email) {
-        String code = EmailVerification.getVerificationCode();
+        Email newEmail = new Email(email);
+        String code = newEmail.getCode();
         emailSender.send(email, code);
-        emailRepository.add(email, code);
+        emailRepository.add(newEmail);
     }
 
     public String verifyEmail(String email, String code) {
-        String sentCode = emailRepository.findCodeByEmail(email);
-        if(!sentCode.equals(code)) {
-           throw new EmailCodeMismatchException();
+        Email savedEmail = emailRepository.findEmailById(email);
+        if (!savedEmail.getCode().equals(code)) {
+            throw new EmailCodeMismatchException();
         } else {
             String ticket = SignUpTicket.issue(email, secret).getToken();
-            emailRepository.delete(email);
+            emailRepository.delete(savedEmail);
             return ticket;
         }
     }
 
     public void checkIfEmailVerified(String ticket, String email) {
         SignUpTicket parsedTicket = SignUpTicket.parse(ticket, secret);
-        if(!parsedTicket.getEmail().equals(email)) {
+        if (!parsedTicket.getEmail().equals(email)) {
             throw new NeedEmailVerificationException();
         }
     }

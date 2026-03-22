@@ -64,7 +64,7 @@ class UserServiceTests {
     void loginUser() {
         User user = new User("user@example.com", "password", fixedClock);
         userRepository.create(user);
-        when(userRepository.findById(user.getId())).thenReturn(user);
+        when(userRepository.getById(user.getId())).thenReturn(user);
         String userToken = AuthToken.issue(user.getId(), SECRET, fixedClock).getToken();
 
         String loggedInUserId = sut.loginUser(userToken);

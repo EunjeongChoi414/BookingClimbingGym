@@ -47,7 +47,7 @@ public class GymService {
                               List<BusinessHoursModel> businessHours,
                               List<PassModel> passes, String userId, int maxCapacity,
                               int cancellationNoticeDays) {
-        User owner = userRepository.findById(userId);
+        User owner = userRepository.getById(userId);
 
         List<BusinessHours> domainBusinessHours = GymMapper.toBusinessHoursDomain(businessHours);
         List<Pass> domainPasses = GymMapper.toPassDomain(passes);
@@ -62,7 +62,7 @@ public class GymService {
     }
 
     public GymDetailModel getGymDetail(String gymId) {
-        Gym gym = gymRepository.findById(gymId);
+        Gym gym = gymRepository.getById(gymId);
         List<BusinessHoursModel> businessHoursModels = GymMapper.toBusinessHoursModels(gym.getBusinessHours());
         List<PassModel> passModels = GymMapper.toPassModels(gym.getPasses());
         String currentCrowdedness = getCurrentCrowdednessLevel(gymId);
@@ -96,10 +96,10 @@ public class GymService {
 
     public BookedWithPassModel bookGymWithPass(
             String userId, String gymId, String userPassId, LocalDateTime startDateTime) {
-        UserPass userPass = userPassRepository.findById(userPassId);
+        UserPass userPass = userPassRepository.getById(userPassId);
         userPass.validate(clock);
 
-        Gym gym = gymRepository.findById(gymId);
+        Gym gym = gymRepository.getById(gymId);
         Booking booking = new Booking(userId, gym, userPassId, startDateTime, userPass, clock);
         bookingRepository.add(booking);
 
@@ -107,8 +107,8 @@ public class GymService {
     }
 
     public List<BookingModel> getGymBookings(String userId, String gymId) {
-        Gym gym = gymRepository.findById(gymId);
-        if (!gym.getOwner().getId().equals(userId)) { //api 레벨 체크로 리팩토링
+        Gym gym = gymRepository.getById(gymId);
+        if (!gym.getOwner().getId().equals(userId)) {
             throw new RuntimeException("권한이 없습니다.");
         }
 
@@ -118,7 +118,7 @@ public class GymService {
     }
 
     public String getCrowdedness(String gymId, LocalDateTime dateTime) {
-        Gym gym = gymRepository.findById(gymId);
+        Gym gym = gymRepository.getById(gymId);
         int bookingCount = bookingRepository.getGymBookingCount(gymId, dateTime);
         CrowdednessLevel level = gym.getCrowdedness(bookingCount);
         return level.toString();
@@ -142,7 +142,7 @@ public class GymService {
 
     private String getCurrentCrowdednessLevel(String gymId) {
         int count = bookingRepository.getGymBookingCount(gymId, LocalDateTime.now(clock));
-        Gym gym = gymRepository.findById(gymId);
+        Gym gym = gymRepository.getById(gymId);
         CrowdednessLevel crowdedness = gym.getCrowdedness(count);
 
         return crowdedness.toString();

@@ -5,7 +5,7 @@ import java.util.List;
 public interface GymRepository {
     void add(Gym gym);
 
-    Gym findById(String gymId);
+    Gym getById(String gymId);
 
     List<Gym> searchGyms(int page, int size, String keyword);
 }

@@ -9,11 +9,13 @@ import java.util.UUID;
 @Entity
 public class Pass {
     @Id
-    private final String id;
-    private final String name;
-    private final BigDecimal price;
-    private final int maxUses;
-    private final int validDays;
+    private String id;
+    private String name;
+    private BigDecimal price;
+    private int maxUses;
+    private int validDays;
+
+    protected Pass() {}
 
     public Pass(String name, BigDecimal price, int maxUses, int validDays) {
         this.id = UUID.randomUUID().toString();

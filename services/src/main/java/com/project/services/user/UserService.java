@@ -8,7 +8,6 @@ import com.project.domain.user.User;
 import com.project.domain.user.UserRepository;
 import com.project.services.user.model.RegisteredUserInfo;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -55,7 +53,7 @@ public class UserService {
         }
 
         String userId = parsedToken.getUserId();
-        User user = userRepository.findById(userId);
+        User user = userRepository.getById(userId);
         user.setLastLoginAt(LocalDateTime.now(clock));
 
         return userId;

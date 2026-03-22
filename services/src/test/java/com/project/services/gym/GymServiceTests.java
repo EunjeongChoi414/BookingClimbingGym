@@ -61,7 +61,7 @@ class GymServiceTests {
         int maxCap = 300;
         User user = createUser();
         int cancellationNoticeDays = 1;
-        when(userRepository.findById(user.getId())).thenReturn(user);
+        when(userRepository.getById(user.getId())).thenReturn(user);
 
         String gymId = sut.registerGym(name, address, contact, businessHours, passes, user.getId(), maxCap, cancellationNoticeDays);
 
@@ -71,7 +71,7 @@ class GymServiceTests {
     @Test
     void getGymDetail() {
         Gym gym = createGym();
-        when(gymRepository.findById(gym.getId())).thenReturn(gym);
+        when(gymRepository.getById(gym.getId())).thenReturn(gym);
 
         GymDetailModel gymDetailModel = sut.getGymDetail(gym.getId());
 
@@ -88,8 +88,8 @@ class GymServiceTests {
         LocalDate validFrom = LocalDate.now(fixedClock);
         LocalDateTime bookedAt = LocalDateTime.now(fixedClock).plusDays(2);
         UserPass userPass = new UserPass(gym.getPasses().get(0), user, validFrom);
-        when(userPassRepository.findById(userPass.getId())).thenReturn(userPass);
-        when(gymRepository.findById(gym.getId())).thenReturn(gym);
+        when(userPassRepository.getById(userPass.getId())).thenReturn(userPass);
+        when(gymRepository.getById(gym.getId())).thenReturn(gym);
 
         BookedWithPassModel result = sut.bookGymWithPass(user.getId(), gym.getId(), userPass.getId(), bookedAt);
 
@@ -106,7 +106,7 @@ class GymServiceTests {
         LocalDate validFrom = LocalDate.now(fixedClock).minusDays(200);
         LocalDateTime bookedAt = LocalDateTime.now(fixedClock).plusDays(2);
         UserPass userPass = new UserPass(gym.getPasses().get(0), user, validFrom);
-        when(userPassRepository.findById(userPass.getId())).thenReturn(userPass);
+        when(userPassRepository.getById(userPass.getId())).thenReturn(userPass);
 
         assertThrows(InvalidPassException.class, () -> {
             sut.bookGymWithPass(user.getId(), gym.getId(), userPass.getId(), bookedAt);

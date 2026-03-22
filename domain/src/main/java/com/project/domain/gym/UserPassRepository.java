@@ -1,7 +1,7 @@
 package com.project.domain.gym;
 
 public interface UserPassRepository {
-    UserPass findById(String id);
+    UserPass getById(String id);
 
     void add(UserPass userPass);
 
