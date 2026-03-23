@@ -5,6 +5,7 @@ import com.project.domain.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,16 +14,22 @@ import java.util.UUID;
 @Entity
 public class UserGym {
     @Id
-    private final String id;
+    private String id;
 
     @ManyToOne
-    private final User user;
+    private User user;
 
     @ManyToOne
-    private final Gym gym;
+    private Gym gym;
 
-    private final List<UserPass> passes;
-    private final List<Booking> bookings;
+    @Transient
+    private List<UserPass> passes;
+
+    @Transient
+    private List<Booking> bookings;
+
+    protected UserGym() {
+    }
 
     public UserGym(User user, Gym gym) {
         this.id = UUID.randomUUID().toString();
@@ -30,10 +37,6 @@ public class UserGym {
         this.gym = gym;
         this.passes = new ArrayList<>();
         this.bookings = new ArrayList<>();
-    }
-
-    public String getId() {
-        return id;
     }
 
     public User getUser() {

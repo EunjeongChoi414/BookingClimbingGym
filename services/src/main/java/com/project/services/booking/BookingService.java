@@ -13,7 +13,7 @@ public class BookingService {
     }
 
     public void cancelBooking(String userId, String bookingId) {
-        Booking booking = bookingRepository.findById(bookingId);
+        Booking booking = bookingRepository.getById(bookingId);
         if (!booking.getUserId().equals(userId)) {
             throw new RuntimeException("올바른 예약이 아닙니다.");
         }

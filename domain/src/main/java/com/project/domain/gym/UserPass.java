@@ -4,6 +4,7 @@ import com.project.domain.exception.InvalidPassException;
 import com.project.domain.exception.NoRemainingUsesException;
 import com.project.domain.user.User;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
@@ -14,17 +15,24 @@ import java.util.UUID;
 
 @Entity
 public class UserPass {
-    private final String id;
+    @Id
+    private String id;
+
     @ManyToOne
     @JoinColumn(name = "pass_id")
-    private final Pass pass;
+    private Pass pass;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private final User user;
-    private final LocalDate validFrom;
-    private final LocalDate validUntil;
+    private User user;
+
+    private LocalDate validFrom;
+    private LocalDate validUntil;
     private int remainingUses;
     private LocalDateTime lastUsedAt;
+
+    protected UserPass() {
+    }
 
     public UserPass(Pass pass, User user, LocalDate validFrom) {
         this.id = UUID.randomUUID().toString();

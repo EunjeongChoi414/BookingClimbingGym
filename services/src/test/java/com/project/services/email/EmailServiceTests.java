@@ -1,6 +1,7 @@
 package com.project.services.email;
 
 import com.project.common.SignUpTicket;
+import com.project.domain.email.Email;
 import com.project.domain.email.EmailRepository;
 import com.project.domain.email.EmailSender;
 import com.project.domain.exception.EmailCodeMismatchException;
@@ -33,23 +34,25 @@ class EmailServiceTests {
 
     @Test
     void verifyEmail() {
-        String email = "user@example.com";
-        String code = "abc123";
-        when(emailRepository.findCodeByEmail(email)).thenReturn(code);
+        String emailAddress = "user@example.com";
+        Email email = new Email(emailAddress);
+        when(emailRepository.findEmailById(email.getId())).thenReturn(email);
+        String code = email.getCode();
 
-        String ticket = sut.verifyEmail(email, code);
+        String ticket = sut.verifyEmail(emailAddress, code);
 
         assertNotNull(ticket);
     }
 
     @Test
     void verifyEmail_throwsWhenCodeMismatch() {
-        String email = "user@example.com";
+        String emailAddress = "user@example.com";
+        Email email = new Email(emailAddress);
         String code = "wrong-code";
-        when(emailRepository.findCodeByEmail(email)).thenReturn("actual-code");
+        when(emailRepository.findEmailById(email.getId())).thenReturn(email);
 
         assertThrows(EmailCodeMismatchException.class,
-                () -> sut.verifyEmail(email, code));
+                () -> sut.verifyEmail(emailAddress, code));
     }
 
     @Test

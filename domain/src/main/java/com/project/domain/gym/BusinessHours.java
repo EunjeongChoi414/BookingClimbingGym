@@ -1,15 +1,21 @@
 package com.project.domain.gym;
 
 import com.project.domain.exception.InvalidBusinessHoursException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 
+@Embeddable
 public class BusinessHours {
-    private final DayOfWeek day;
-    private final LocalTime startTime;
-    private final LocalTime endTime;
+    @Column(name = "day_of_week")
+    private DayOfWeek day;
+    private LocalTime startTime;
+    private LocalTime endTime;
+
+    protected BusinessHours() {}
 
     public BusinessHours(DayOfWeek day, LocalTime startTime, LocalTime endTime) {
         this.day = day;

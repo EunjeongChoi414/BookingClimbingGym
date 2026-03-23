@@ -1,11 +1,9 @@
 package com.project.domain.email;
 
-import java.util.Optional;
-
 public interface EmailRepository {
-    void add(String email, String code);
+    void add(Email email);
 
-    String findCodeByEmail(String email);
+    Email findEmailById(String email);
 
-    void delete(String email);
+    void delete(Email email);
 }

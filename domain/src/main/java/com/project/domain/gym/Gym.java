@@ -1,9 +1,7 @@
 package com.project.domain.gym;
 
 import com.project.domain.user.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,16 +9,26 @@ import java.util.UUID;
 @Entity
 public class Gym {
     @Id
-    private final String id;
-    private final String name;
-    private final String address;
-    private final String contact;
-    private final List<BusinessHours> businessHours;
-    private final List<Pass> passes;
-    private final int cancellationNoticeDays;
-    private final int maxCapacity;
+    private String id;
+    private String name;
+    private String address;
+    private String contact;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "gym_business_hours", joinColumns = @JoinColumn(name = "gym_id"))
+    private List<BusinessHours> businessHours;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "gym_id")
+    private List<Pass> passes;
+
+    private int cancellationNoticeDays;
+    private int maxCapacity;
+
     @ManyToOne
-    private final User owner;
+    private User owner;
+
+    protected Gym() {}
 
     public Gym(String name, String address, String contact,
                List<BusinessHours> businessHours, List<Pass> passes, User owner,

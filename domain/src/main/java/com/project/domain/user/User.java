@@ -1,18 +1,25 @@
 package com.project.domain.user;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "users")
 public class User {
-    private final String id;
-    private final String email;
-    private final String password;
+    @Id
+    private String id;
+    private String email;
+    private String password;
     private LocalDateTime lastLoginAt;
     private boolean isManager;
+
+    protected User() {
+    }
 
     public User(String email, String password, Clock clock) {
         this.id = UUID.randomUUID().toString();

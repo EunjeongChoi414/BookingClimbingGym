@@ -5,6 +5,7 @@ import com.project.domain.exception.InvalidBookingException;
 import com.project.domain.gym.Gym;
 import com.project.domain.gym.UserPass;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
@@ -14,15 +15,21 @@ import java.util.UUID;
 
 @Entity
 public class Booking {
-    private final String id;
-    private final String userId;
+    @Id
+    private String id;
+    private String userId;
+
     @ManyToOne
     @JoinColumn(name = "gym_id")
-    private final Gym gym;
-    private final String passId;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime bookedDateTime;
+    private Gym gym;
+
+    private String passId;
+    private LocalDateTime createdAt;
+    private LocalDateTime bookedDateTime;
     private String qrToken;
+
+    protected Booking() {
+    }
 
     public Booking(
             String userId, Gym gym, String passId, LocalDateTime bookedDateTime,
