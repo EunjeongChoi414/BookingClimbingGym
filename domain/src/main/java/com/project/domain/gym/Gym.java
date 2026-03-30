@@ -1,5 +1,6 @@
 package com.project.domain.gym;
 
+import com.project.domain.exception.InvalidPassException;
 import com.project.domain.user.User;
 import jakarta.persistence.*;
 
@@ -80,6 +81,13 @@ public class Gym {
 
     public int getCancellationNoticeDays() {
         return cancellationNoticeDays;
+    }
+
+    public Pass getPassById(String passId) {
+        return passes.stream()
+                .filter(p -> p.getId().equals(passId))
+                .findFirst()
+                .orElseThrow(InvalidPassException::new);
     }
 
     public CrowdednessLevel getCrowdedness(int bookingCount) {
