@@ -22,15 +22,13 @@ public class TossPaymentClientImpl implements PaymentClient {
 
     private final String secretKey;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public TossPaymentClientImpl(
             @Value("${toss.secret-key}") String secretKey,
-            RestTemplate restTemplate,
-            ObjectMapper objectMapper) {
+            RestTemplate restTemplate) {
         this.secretKey = secretKey;
         this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -45,11 +43,12 @@ public class TossPaymentClientImpl implements PaymentClient {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<JsonNode> response = restTemplate.exchange(
-                    CONFIRM_URL, HttpMethod.POST, request, JsonNode.class);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    CONFIRM_URL, HttpMethod.POST, request, String.class);
 
-            String receiptUrl = response.getBody()
-                    .path("receipt")
+            JsonNode node = objectMapper.readTree(response.getBody());
+
+            String receiptUrl = node.path("receipt")
                     .path("url")
                     .asText(null);
 
@@ -58,11 +57,12 @@ public class TossPaymentClientImpl implements PaymentClient {
         } catch (HttpClientErrorException e) {
             String errorMessage = extractErrorMessage(e.getResponseBodyAsString());
             return PaymentConfirmResult.failure(errorMessage);
+        } catch (Exception e) {
+            return PaymentConfirmResult.failure("결제 승인 응답 처리에 실패했습니다.");
         }
     }
 
     private HttpHeaders buildHeaders() {
-        // 토스 인증: Base64("secretKey:")
         String encoded = Base64.getEncoder()
                 .encodeToString((secretKey + ":").getBytes());
 

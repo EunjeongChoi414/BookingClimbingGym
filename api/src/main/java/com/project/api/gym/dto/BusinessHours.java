@@ -14,11 +14,11 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class BusinessHours {
     @NotNull
-    private DayOfWeek Day;
+    private DayOfWeek day;
 
     @JsonFormat(pattern = "HH:mm")
-    private LocalTime StartTime;
+    private LocalTime startTime;
 
     @JsonFormat(pattern = "HH:mm")
-    private LocalTime EndTime;
+    private LocalTime endTime;
 }

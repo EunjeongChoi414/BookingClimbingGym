@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record ConfirmPurchaseReq(
+public record ConfirmPaymentReq(
         @NotBlank(message = "paymentKey는 필수입니다.")
         String paymentKey,
 
@@ -16,4 +16,5 @@ public record ConfirmPurchaseReq(
         @NotNull(message = "amount는 필수입니다.")
         @Positive(message = "amount는 양수여야 합니다.")
         BigDecimal amount
-) {}
+) {
+}

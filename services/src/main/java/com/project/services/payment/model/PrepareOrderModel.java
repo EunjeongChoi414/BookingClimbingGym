@@ -1,9 +1,10 @@
-package com.project.api.gym.dto;
+package com.project.services.payment.model;
 
 import java.math.BigDecimal;
 
-public record PreparePurchaseRes(
+public record PrepareOrderModel(
         String orderId,
         BigDecimal amount,
         String passName
-) {}
+) {
+}

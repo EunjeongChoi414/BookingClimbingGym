@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+</head>
+<body>
+<button onclick="pay()">결제하기</button>
+<script>
+    const clientKey = "test_ck_여기에_클라이언트키";
+
+    async function pay() {
+      const toss = TossPayments(clientKey);
+      await toss.requestPayment("카드", {
+        amount: 90000,               // prepare 에서 받은 amount
+        orderId: "여기에 orderId",   // prepare 에서 받은 orderId
+        orderName: "order 이름",
+        successUrl: "http://localhost:8080/app/payment/success",
+        failUrl: "http://localhost:8080/app/payment/fail",
+      });
+    }
+</script>
+</body>
+</html>

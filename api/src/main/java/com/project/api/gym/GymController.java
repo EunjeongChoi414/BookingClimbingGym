@@ -4,8 +4,9 @@ import com.project.api.gym.dto.*;
 import com.project.api.response.BaseResponse;
 import com.project.api.response.ResponseService;
 import com.project.services.gym.GymService;
-import com.project.services.gym.PurchaseService;
 import com.project.services.gym.model.*;
+import com.project.services.payment.PaymentService;
+import com.project.services.payment.model.PrepareOrderModel;
 import com.project.services.user.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -23,7 +24,7 @@ public class GymController {
 
     private final ResponseService responseService = new ResponseService();
     private final GymService gymService;
-    private final PurchaseService purchaseService;
+    private final PaymentService paymentService;
     private final UserService userService;
 
     //관리자 api: 사업자 정보 인증하기
@@ -141,33 +142,33 @@ public class GymController {
     }
 
     // Pass 카드 구매 — 1단계: 결제 준비 (orderId 발급)
-    @PostMapping("/{gymId}/passes/{passId}/purchase/prepare")
-    public BaseResponse<PreparePurchaseRes> preparePurchase(
+    @PostMapping("/{gymId}/passes/{passId}/payment/prepare")
+    public BaseResponse<PreparePaymentRes> preparePayment(
             @RequestHeader("Authorization") String token,
             @PathVariable String gymId,
             @PathVariable String passId) {
 
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
-        PrepareOrderModel model = purchaseService.prepareOrder(userId, gymId, passId);
+        PrepareOrderModel model = paymentService.prepareOrder(userId, gymId, passId);
 
         return responseService.getSuccessResponse(
-                new PreparePurchaseRes(model.orderId(), model.amount(), model.passName()));
+                new PreparePaymentRes(model.orderId(), model.amount(), model.passName()));
     }
 
     // Pass 카드 구매 — 2단계: 결제 확인 & UserPass 발급
-    @PostMapping("/{gymId}/passes/{passId}/purchase/confirm")
-    public BaseResponse<ConfirmPurchaseRes> confirmPurchase(
+    @PostMapping("/{gymId}/passes/{passId}/payment/confirm")
+    public BaseResponse<ConfirmPaymentRes> confirmPayment(
             @RequestHeader("Authorization") String token,
             @PathVariable String gymId,
             @PathVariable String passId,
-            @RequestBody @Valid ConfirmPurchaseReq req) {
+            @RequestBody @Valid ConfirmPaymentReq req) {
 
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
-        ConfirmedPassModel model = purchaseService.confirmOrder(
+        ConfirmedPassModel model = paymentService.confirmOrder(
                 userId, gymId, passId, req.paymentKey(), req.orderId(), req.amount());
 
         return responseService.getSuccessResponse(
-                new ConfirmPurchaseRes(model.userPassId(), model.passName(), model.validUntil(), model.remainingUses()));
+                new ConfirmPaymentRes(model.userPassId(), model.passName(), model.validUntil(), model.remainingUses()));
     }
 
     //패스로 결제하기

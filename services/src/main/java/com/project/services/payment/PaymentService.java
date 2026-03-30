@@ -1,14 +1,16 @@
-package com.project.services.gym;
+package com.project.services.payment;
 
+import com.project.domain.exception.DomainException;
 import com.project.domain.exception.DuplicatePendingOrderException;
 import com.project.domain.exception.PaymentFailedException;
 import com.project.domain.gym.*;
 import com.project.domain.user.User;
 import com.project.domain.user.UserRepository;
 import com.project.services.gym.model.ConfirmedPassModel;
-import com.project.services.gym.model.PrepareOrderModel;
-import com.project.services.user.UserService;
+import com.project.services.payment.model.PrepareOrderModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -16,37 +18,32 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
-public class PurchaseService {
+public class PaymentService {
 
     private final GymRepository gymRepository;
     private final UserRepository userRepository;
     private final UserPassRepository userPassRepository;
     private final OrderRepository orderRepository;
     private final PaymentClient tossPaymentClient;
-    private final UserService userService;
     private final Clock clock;
 
-    public PurchaseService(
+    public PaymentService(
             GymRepository gymRepository,
             UserRepository userRepository,
             UserPassRepository userPassRepository,
             OrderRepository orderRepository,
             PaymentClient tossPaymentClient,
-            UserService userService,
             Clock clock) {
         this.gymRepository = gymRepository;
         this.userRepository = userRepository;
         this.userPassRepository = userPassRepository;
         this.orderRepository = orderRepository;
         this.tossPaymentClient = tossPaymentClient;
-        this.userService = userService;
         this.clock = clock;
     }
 
     /**
      * 1단계: 결제 준비
-     * - Order 를 PENDING 상태로 저장
-     * - 클라이언트에 orderId, amount, passName 반환
      */
     public PrepareOrderModel prepareOrder(String userId, String gymId, String passId) {
 
@@ -57,7 +54,9 @@ public class PurchaseService {
             throw new DuplicatePendingOrderException();
         }
 
-        Order order = new Order(userId, passId, pass.getPrice());
+        // TODO: 같은 passId 를 다 소진했는지 확인한다
+
+        Order order = new Order(userId, passId, pass.getPrice(), LocalDateTime.now(clock));
         orderRepository.save(order);
 
         return new PrepareOrderModel(order.getId(), pass.getPrice(), pass.getName());
@@ -68,10 +67,6 @@ public class PurchaseService {
      * - 위변조 방지 검증 (userId, amount)
      * - 토스 confirm API 호출 (트랜잭션 외부)
      * - Order 완료 처리 & UserPass 생성
-     * <p>
-     * 주의: 토스 API 호출을 트랜잭션 안에 포함하지 않도록 설계.
-     * 외부 API 실패 시 DB 롤백이 발생하지 않아야 하므로
-     * order.fail() 저장과 예외를 명시적으로 분리함.
      */
     public ConfirmedPassModel confirmOrder(
             String userId, String gymId, String passId,
@@ -79,14 +74,18 @@ public class PurchaseService {
 
         // 1. 위변조 방지 검증 (userId, amount, status, 만료 여부)
         Order order = orderRepository.getById(orderId);
-        order.validateForConfirm(userId, clientAmount, LocalDateTime.now(clock));
+        try {
+            order.validateForConfirm(userId, clientAmount, LocalDateTime.now(clock));
+        } catch (DomainException e) {
+            fail(order);
+            throw e;
+        }
 
-        // 2. 토스 confirm API 호출 — DB 저장값(order.getAmount()) 사용 (클라이언트값 미사용)
+        //2. 토스 confirm API 호출 — DB 저장값(order.getAmount()) 사용 (클라이언트값 미사용)
         PaymentConfirmResult result = tossPaymentClient.confirm(paymentKey, orderId, order.getAmount());
 
         if (!result.isSuccess()) {
-            order.fail();
-            orderRepository.save(order);
+            fail(order);
             throw new PaymentFailedException(result.getErrorMessage());
         }
 
@@ -107,5 +106,17 @@ public class PurchaseService {
                 pass.getName(),
                 userPass.getValidUntil(),
                 userPass.getRemainingUses());
+    }
+
+    public void confirmFailOrder(String orderId) {
+        Order order = orderRepository.getById(orderId);
+        order.fail();
+        orderRepository.save(order);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void fail(Order order) {
+        order.fail();
+        orderRepository.save(order);
     }
 }

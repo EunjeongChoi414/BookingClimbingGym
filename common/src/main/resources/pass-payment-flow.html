@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pass 카드 결제 구매 로직</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+          background: #f4f6fa;
+          color: #1e2533;
+          padding: 40px 24px;
+        }
+        h1 {
+          font-size: 1.7rem;
+          font-weight: 700;
+          margin-bottom: 8px;
+        }
+        .subtitle {
+          font-size: 0.95rem;
+          color: #6b7280;
+          margin-bottom: 40px;
+        }
+        .badge {
+          display: inline-block;
+          background: #e0f2fe;
+          color: #0369a1;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border-radius: 20px;
+          padding: 2px 10px;
+          margin-right: 6px;
+        }
+
+        .section {
+          background: #fff;
+          border-radius: 14px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+          margin-bottom: 36px;
+          overflow: hidden;
+        }
+        .section-header {
+          padding: 18px 24px;
+          border-bottom: 1px solid #e5e7eb;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .section-header h2 {
+          font-size: 1.05rem;
+          font-weight: 600;
+        }
+        .section-body { padding: 28px 24px; }
+
+        .mermaid { text-align: center; }
+
+        .pseudo-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+        @media (max-width: 768px) { .pseudo-grid { grid-template-columns: 1fr; } }
+
+        .pseudo-block { background: #f8fafc; border-radius: 10px; overflow: hidden; }
+        .pseudo-block-title {
+          background: #1e2533;
+          color: #fff;
+          padding: 10px 16px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+        }
+        .pseudo-block-title.client  { background: #0369a1; }
+        .pseudo-block-title.server  { background: #065f46; }
+        .pseudo-block-title.toss    { background: #7c3aed; }
+
+        pre {
+          padding: 16px;
+          font-size: 0.82rem;
+          line-height: 1.7;
+          overflow-x: auto;
+          white-space: pre;
+          font-family: 'Consolas', 'Fira Mono', monospace;
+        }
+        .kw  { color: #7c3aed; font-weight: 700; }
+        .fn  { color: #0369a1; font-weight: 600; }
+        .cm  { color: #6b7280; font-style: italic; }
+        .err { color: #dc2626; font-weight: 600; }
+        .ok  { color: #059669; font-weight: 600; }
+        .str { color: #92400e; }
+
+        .api-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.85rem;
+        }
+        .api-table th {
+          background: #f1f5f9;
+          padding: 10px 14px;
+          text-align: left;
+          font-weight: 600;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .api-table td {
+          padding: 10px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          vertical-align: top;
+        }
+        .method {
+          display: inline-block;
+          font-size: 0.72rem;
+          font-weight: 700;
+          border-radius: 4px;
+          padding: 2px 7px;
+          color: #fff;
+        }
+        .post { background: #059669; }
+        .get  { background: #0369a1; }
+
+        .error-list { display: flex; flex-wrap: wrap; gap: 12px; }
+        .error-card {
+          border-left: 4px solid;
+          border-radius: 0 8px 8px 0;
+          background: #fff9f9;
+          padding: 12px 16px;
+          flex: 1 1 220px;
+        }
+        .error-card.critical { border-color: #dc2626; }
+        .error-card.warn     { border-color: #f59e0b; }
+        .error-card.info     { border-color: #3b82f6; }
+        .error-card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+        .error-card p  { font-size: 0.8rem; color: #4b5563; }
+
+        .schema-box {
+          background: #fefce8;
+          border: 1px solid #fde68a;
+          border-radius: 10px;
+          padding: 16px;
+        }
+        .schema-box h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; color: #92400e; }
+        .field-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; font-size: 0.82rem; }
+        .field-name { font-weight: 600; min-width: 160px; }
+        .field-type { color: #7c3aed; min-width: 100px; }
+        .field-desc { color: #6b7280; }
+    </style>
+</head>
+<body>
+
+<h1>🧗 Pass 카드 결제 구매 로직</h1>
+<p class="subtitle">
+    <span class="badge">토스페이먼츠</span>
+    <span class="badge">BookingClimbingGym</span>
+    암장 예약을 위한 Pass 카드 결제 구매 흐름 설계
+</p>
+
+<!-- 1. 전체 흐름도 -->
+<div class="section">
+    <div class="section-header">
+        <span style="font-size:1.3rem">🗺️</span>
+        <h2>전체 흐름도</h2>
+    </div>
+    <div class="section-body">
+        <div class="mermaid">
+            sequenceDiagram
+            autonumber
+            participant C as 클라이언트 (앱/웹)
+            participant S as 백엔드 서버
+            participant T as 토스페이먼츠 API
+            participant DB as 데이터베이스
+
+            C->>C: 암장 Pass 목록 조회<br/>(GET /app/gyms/{gymId})
+            C->>C: 구매할 Pass 선택
+
+            Note over C,T: ── 1단계: 결제 준비 (서버) ──
+            C->>S: POST /app/gyms/{gymId}/passes/{passId}/purchase/prepare<br/>Authorization: Bearer {token}
+            S->>DB: 유저 존재 확인, Pass 존재 확인
+            S->>S: orderId 생성 (UUID), amount 계산
+            S->>DB: PurchaseOrder 저장 (PENDING 상태)
+            S-->>C: { orderId, amount, passName }
+
+            Note over C,T: ── 2단계: 결제 위젯 실행 (클라이언트) ──
+            C->>T: 토스페이먼츠 SDK 결제 위젯 실행<br/>{ orderId, amount, orderName }
+            T->>C: 카드 정보 입력 UI 표시
+            C->>T: 사용자 카드 정보 입력 & 결제 승인 요청
+            T-->>C: 결제 요청 완료 콜백 (임시 승인)<br/>{ paymentKey, orderId, amount }
+
+            Note over S,DB: ── 3단계: 결제 확인 & Pass 지급 (서버) ──
+            C->>S: POST /app/gyms/{gymId}/passes/{passId}/payment/confirm<br/>{ paymentKey, orderId, amount }
+            S->>DB: orderId로 Order 조회 (위변조 방지)
+            S->>S: amount 일치 여부 검증
+            S->>T: POST /v1/payments/confirm<br/>{ paymentKey, orderId, amount }
+            T-->>S: 결제 승인 결과 (HTTP 200 / 4xx)
+
+            alt 결제 승인 성공
+            S->>DB: Order 상태 → COMPLETED<br/>결제 정보 저장 (paymentKey, receiptUrl 등)
+            S->>DB: UserPass 생성<br/>(user, pass, validFrom=오늘, remainingUses=maxUses)
+            S-->>C: { userPassId, passName, validUntil, remainingUses }
+            else 결제 승인 실패
+            S->>DB: Order 상태 → FAILED
+            S-->>C: 오류 응답 (토스 에러 코드 포함)
+            end
+        </div>
+    </div>
+</div>
+
+<!-- 2. 의사코드 -->
+<div class="section">
+    <div class="section-header">
+        <span style="font-size:1.3rem">📝</span>
+        <h2>의사코드</h2>
+    </div>
+    <div class="section-body">
+        <div class="pseudo-grid">
+
+            <div class="pseudo-block">
+                <div class="pseudo-block-title client">CLIENT — Pass 구매 흐름</div>
+                <pre>
+<span class="fn">purchasePass</span>(<span class="str">gymId</span>, <span class="str">passId</span>):
+
+  <span class="cm">// 1. 서버에 결제 준비 요청</span>
+  order = <span class="fn">POST</span> <span class="str">/app/gyms/{gymId}/passes/{passId}/payment/prepare</span>
+  <span class="cm">// ← { orderId, amount, passName }</span>
+
+  <span class="cm">// 2. 토스페이먼츠 SDK 초기화</span>
+  toss = <span class="fn">TossPayments</span>(<span class="str">CLIENT_KEY</span>)
+  payment = toss.<span class="fn">payment</span>(<span class="str">"카드"</span>)
+
+  <span class="kw">try</span>:
+    <span class="cm">// 3. 결제 위젯 실행 (사용자 카드 입력)</span>
+    result = <span class="kw">await</span> payment.<span class="fn">requestPayment</span>({
+      orderId   : order.orderId,
+      orderName : order.passName,
+      amount    : order.amount,
+      successUrl: <span class="str">"{baseUrl}/payment/success"</span>,
+      failUrl   : <span class="str">"{baseUrl}/payment/fail"</span>
+    })
+
+    <span class="cm">// 4. 임시 승인 콜백 → 서버 confirm 요청 (여기서 결제 확정)</span>
+    userPass = <span class="fn">POST</span> <span class="str">/app/gyms/{gymId}/passes/{passId}/payment/confirm</span>
+               body: result
+
+    <span class="ok">// 5. Pass 발급 완료 UI 표시</span>
+    <span class="fn">showSuccess</span>(userPass)
+
+  <span class="kw">catch</span> PaymentCancelledError:
+    <span class="fn">showMessage</span>(<span class="str">"결제가 취소되었습니다."</span>)
+
+  <span class="kw">catch</span> PaymentFailedError as e:
+    <span class="fn">showMessage</span>(e.message)
+        </pre>
+            </div>
+
+            <div class="pseudo-block">
+                <div class="pseudo-block-title server">SERVER — POST /payment/prepare</div>
+                <pre>
+<span class="fn">preparePayment</span>(<span class="str">token</span>, <span class="str">gymId</span>, <span
+                        class="str">passId</span>):
+
+  <span class="cm">// 1. 유저 인증</span>
+  userId = <span class="fn">getUserIdFromToken</span>(token)
+
+  <span class="cm">// 2. 암장 & Pass 존재 확인</span>
+  gym  = gymRepository.<span class="fn">getById</span>(gymId)
+        → GymNotFoundException <span class="kw">if</span> 없음
+
+  pass = gym.<span class="fn">getPassById</span>(passId)
+        → PassNotFoundException <span class="kw">if</span> 없음
+
+  <span class="cm">// 3. 중복 PENDING 주문 방지</span>
+  <span class="kw">if</span> orderRepository.<span class="fn">existsPending</span>(userId, passId):
+    <span class="err">throw</span> DuplicatePendingOrderException
+
+  <span class="cm">// 4. 주문 생성 및 저장</span>
+  orderId = <span class="fn">UUID.randomUUID</span>()
+  order = <span class="kw">new</span> <span class="fn">Order</span>(
+    orderId  : orderId,
+    userId   : userId,
+    passId   : passId,
+    amount   : pass.getPrice(),
+    status   : PENDING,
+    expiresAt: now + 10분
+  )
+  orderRepository.<span class="fn">save</span>(order)
+
+  <span class="ok">return</span> { orderId, amount: pass.getPrice(), passName: pass.getName() }
+        </pre>
+            </div>
+
+            <div class="pseudo-block">
+                <div class="pseudo-block-title server">SERVER — POST /payment/confirm</div>
+                <pre>
+<span class="fn">confirmPayment</span>(<span class="str">token</span>, <span class="str">gymId</span>, <span
+                        class="str">passId</span>,
+               <span class="str">paymentKey</span>, <span class="str">orderId</span>, <span class="str">amount</span>):
+
+  userId = <span class="fn">getUserIdFromToken</span>(token)
+
+  <span class="cm">// 1. 위변조 방지: 서버 저장 주문과 비교</span>
+  order = orderRepository.<span class="fn">getByOrderId</span>(orderId)
+        → OrderNotFoundException <span class="kw">if</span> 없음
+
+  <span class="kw">if</span> order.userId ≠ userId:
+    <span class="err">throw</span> UnauthorizedException
+  <span class="kw">if</span> order.amount ≠ amount:
+    <span class="err">throw</span> AmountMismatchException
+  <span class="kw">if</span> order.status ≠ PENDING:
+    <span class="err">throw</span> AlreadyProcessedException
+  <span class="kw">if</span> order.expiresAt &lt; now():
+    <span class="err">throw</span> OrderExpiredException
+
+  <span class="cm">// 2. 토스페이먼츠 결제 승인 API 호출</span>
+  tossResponse = <span class="fn">callTossConfirmAPI</span>(paymentKey, orderId, amount)
+
+  <span class="kw">if</span> tossResponse.isFailure():
+    order.status = FAILED
+    orderRepository.<span class="fn">save</span>(order)
+    <span class="err">throw</span> PaymentFailedException(tossResponse.errorMessage)
+
+  <span class="cm">// 3. 결제 완료 처리</span>
+  order.status     = COMPLETED
+  order.paymentKey = paymentKey
+  order.receiptUrl = tossResponse.receipt.url
+  orderRepository.<span class="fn">save</span>(order)
+
+  <span class="cm">// 4. UserPass 발급</span>
+  pass    = gym.<span class="fn">getPassById</span>(passId)
+  user    = userRepository.<span class="fn">getById</span>(userId)
+  userPass = <span class="kw">new</span> <span class="fn">UserPass</span>(pass, user, validFrom=today())
+  userPassRepository.<span class="fn">save</span>(userPass)
+
+  <span class="ok">return</span> {
+    userPassId    : userPass.getId(),
+    passName      : pass.getName(),
+    validUntil    : userPass.getValidUntil(),
+    remainingUses : userPass.getRemainingUses()
+  }
+        </pre>
+            </div>
+
+            <div class="pseudo-block">
+                <div class="pseudo-block-title toss">TOSS — 결제 승인 API 호출</div>
+                <pre>
+<span class="fn">callTossConfirmAPI</span>(<span class="str">paymentKey</span>, <span class="str">orderId</span>, <span
+                        class="str">amount</span>):
+
+  secretKey = <span class="fn">Base64</span>(<span class="str">"{TOSS_SECRET_KEY}:"</span>)
+
+  response = <span class="fn">HTTP_POST</span>(
+    url    : <span class="str">"https://api.tosspayments.com/v1/payments/confirm"</span>,
+    headers: {
+      Authorization : <span class="str">"Basic {secretKey}"</span>,
+      Content-Type  : <span class="str">"application/json"</span>
+    },
+    body   : {
+      paymentKey: paymentKey,
+      orderId   : orderId,
+      amount    : amount
+    }
+  )
+
+  <span class="kw">if</span> response.status == 200:
+    <span class="ok">return</span> TossPaymentResult(
+      success   : <span class="ok">true</span>,
+      receiptUrl: response.body.receipt.url,
+      method    : response.body.method,
+      approvedAt: response.body.approvedAt
+    )
+
+  <span class="kw">else</span>:  <span class="cm">// 4xx / 5xx</span>
+    <span class="ok">return</span> TossPaymentResult(
+      success     : <span class="err">false</span>,
+      errorCode   : response.body.code,
+      errorMessage: response.body.message
+    )
+
+<span class="cm">// 주요 토스 에러 코드</span>
+<span class="cm">// ALREADY_PROCESSED_PAYMENT → 중복 결제 시도</span>
+<span class="cm">// INVALID_STOPPED_CARD      → 정지 카드</span>
+<span class="cm">// EXCEED_MAX_DAILY_PAYMENT_COUNT → 한도 초과</span>
+        </pre>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- 3. API 명세 -->
+<div class="section">
+    <div class="section-header">
+        <span style="font-size:1.3rem">📡</span>
+        <h2>추가 필요 API 엔드포인트</h2>
+    </div>
+    <div class="section-body">
+        <table class="api-table">
+            <thead>
+            <tr>
+                <th>메서드</th>
+                <th>경로</th>
+                <th>설명</th>
+                <th>Request Body</th>
+                <th>Response</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="method post">POST</span></td>
+                <td>/app/gyms/{gymId}/passes/{passId}/payment/prepare</td>
+                <td>결제 준비 — orderId 발급</td>
+                <td>—</td>
+                <td>orderId, amount, passName</td>
+            </tr>
+            <tr>
+                <td><span class="method post">POST</span></td>
+                <td>/app/gyms/{gymId}/passes/{passId}/payment/confirm</td>
+                <td>결제 확인 & UserPass 발급</td>
+                <td>paymentKey, orderId, amount</td>
+                <td>userPassId, passName, validUntil, remainingUses</td>
+            </tr>
+            <tr>
+                <td><span class="method get">GET</span></td>
+                <td>/app/gyms/{gymId}/passes/{passId}/payment/{orderId}</td>
+                <td>결제 상태 조회 (실패 후 재시도 여부 확인용)</td>
+                <td>—</td>
+                <td>status (PENDING / COMPLETED / FAILED)</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 4. 신규 도메인 엔티티 -->
+<div class="section">
+    <div class="section-header">
+        <span style="font-size:1.3rem">🗄️</span>
+        <h2>신규 도메인 엔티티 — Order</h2>
+    </div>
+    <div class="section-body">
+        <div class="schema-box">
+            <h4>Order (결제 주문) — domain/gym/Order.java</h4>
+            <div class="field-row"><span class="field-name">id (orderId)</span><span
+                    class="field-type">String (UUID)</span><span class="field-desc">토스 orderId 와 1:1 매핑</span></div>
+            <div class="field-row"><span class="field-name">userId</span><span class="field-type">String</span><span
+                    class="field-desc">구매한 유저 ID</span></div>
+            <div class="field-row"><span class="field-name">passId</span><span class="field-type">String</span><span
+                    class="field-desc">구매 대상 Pass ID</span></div>
+            <div class="field-row"><span class="field-name">amount</span><span class="field-type">BigDecimal</span><span
+                    class="field-desc">서버가 계산한 금액 (위변조 방지 기준)</span></div>
+            <div class="field-row"><span class="field-name">status</span><span class="field-type">Enum</span><span
+                    class="field-desc">PENDING / COMPLETED / FAILED</span></div>
+            <div class="field-row"><span class="field-name">paymentKey</span><span
+                    class="field-type">String (nullable)</span><span class="field-desc">토스 결제 키 (승인 후 저장)</span></div>
+            <div class="field-row"><span class="field-name">receiptUrl</span><span
+                    class="field-type">String (nullable)</span><span class="field-desc">영수증 URL</span></div>
+            <div class="field-row"><span class="field-name">createdAt</span><span
+                    class="field-type">LocalDateTime</span><span class="field-desc">주문 생성 시각</span></div>
+            <div class="field-row"><span class="field-name">expiresAt</span><span
+                    class="field-type">LocalDateTime</span><span class="field-desc">PENDING 만료 시각 (생성 후 10분)</span>
+            </div>
+            <div class="field-row"><span class="field-name">completedAt</span><span class="field-type">LocalDateTime (nullable)</span><span
+                    class="field-desc">결제 완료 시각</span></div>
+        </div>
+        <p style="margin-top:14px; font-size:0.83rem; color:#6b7280;">
+            ※ <strong>@Transactional</strong> 범위: confirmPayment 전체를 하나의 트랜잭션으로 묶되,<br/>
+            토스 API 호출은 트랜잭션 외부에서 실행 → 외부 API 실패 시 DB 롤백 방지
+        </p>
+    </div>
+</div>
+
+<!-- 5. 에러 처리 -->
+<div class="section">
+    <div class="section-header">
+        <span style="font-size:1.3rem">🚨</span>
+        <h2>주요 에러 처리</h2>
+    </div>
+    <div class="section-body">
+        <div class="error-list">
+            <div class="error-card critical">
+                <h4>AmountMismatchException</h4>
+                <p>클라이언트가 보낸 amount와 서버 저장 amount 불일치 → 400 Bad Request (위변조 의심)</p>
+            </div>
+            <div class="error-card critical">
+                <h4>AlreadyProcessedException</h4>
+                <p>이미 COMPLETED/FAILED 상태의 orderId로 confirm 재시도 → 409 Conflict</p>
+            </div>
+            <div class="error-card warn">
+                <h4>OrderExpiredException</h4>
+                <p>10분이 지난 PENDING 주문 → 410 Gone, 클라이언트에서 재준비 유도</p>
+            </div>
+            <div class="error-card warn">
+                <h4>PaymentFailedException</h4>
+                <p>토스 승인 거절 (카드 한도, 정지 등) → 402 Payment Required + 토스 에러 코드 전달</p>
+            </div>
+            <div class="error-card info">
+                <h4>DuplicatePendingOrderException</h4>
+                <p>같은 유저가 같은 Pass에 PENDING 주문이 이미 존재 → 409 Conflict (기존 orderId 반환)</p>
+            </div>
+            <div class="error-card info">
+                <h4>PassNotFoundException</h4>
+                <p>해당 암장에 존재하지 않는 passId → 404 Not Found</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', sequence: { actorMargin: 60 } });
+</script>
+</body>
+</html>

@@ -15,7 +15,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getById(String userId) {
-        return jpaRepository.findById(userId).orElse(null);
+        return jpaRepository.findById(userId).orElseThrow();
     }
 
     @Override

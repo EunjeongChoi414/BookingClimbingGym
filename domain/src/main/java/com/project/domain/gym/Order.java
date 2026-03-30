@@ -33,14 +33,14 @@ public class Order {
     protected Order() {
     }
 
-    public Order(String userId, String passId, BigDecimal amount) {
+    public Order(String userId, String passId, BigDecimal amount, LocalDateTime now) {
         this.id = UUID.randomUUID().toString();
         this.userId = userId;
         this.passId = passId;
         this.amount = amount;
         this.status = OrderStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
-        this.expiresAt = LocalDateTime.now().plusMinutes(10);
+        this.createdAt = now;
+        this.expiresAt = now.plusMinutes(10);
     }
 
     /**

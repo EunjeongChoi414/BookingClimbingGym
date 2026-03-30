@@ -28,7 +28,7 @@ public class UserPass {
 
     private LocalDate validFrom;
     private LocalDate validUntil;
-    private int remainingUses;
+    private Integer remainingUses;
     private LocalDateTime lastUsedAt;
 
     protected UserPass() {

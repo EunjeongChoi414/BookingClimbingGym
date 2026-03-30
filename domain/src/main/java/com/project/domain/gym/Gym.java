@@ -1,7 +1,6 @@
 package com.project.domain.gym;
 
 import com.project.domain.exception.InvalidPassException;
-import com.project.domain.user.User;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -26,13 +25,13 @@ public class Gym {
     private int cancellationNoticeDays;
     private int maxCapacity;
 
-    @ManyToOne
-    private User owner;
+    private String ownerId;
 
-    protected Gym() {}
+    protected Gym() {
+    }
 
     public Gym(String name, String address, String contact,
-               List<BusinessHours> businessHours, List<Pass> passes, User owner,
+               List<BusinessHours> businessHours, List<Pass> passes, String ownerId,
                int maxCapacity, int cancellationNoticeDays) {
 
         this.id = UUID.randomUUID().toString();
@@ -41,10 +40,9 @@ public class Gym {
         this.contact = contact;
         this.businessHours = businessHours;
         this.passes = passes;
-        this.owner = owner;
+        this.ownerId = ownerId;
         this.maxCapacity = maxCapacity;
         this.cancellationNoticeDays = cancellationNoticeDays;
-        owner.setIsManager(true);
     }
 
     public String getId() {
@@ -71,8 +69,8 @@ public class Gym {
         return passes;
     }
 
-    public User getOwner() {
-        return owner;
+    public String getOwnerId() {
+        return ownerId;
     }
 
     public int getMaxCapacity() {
