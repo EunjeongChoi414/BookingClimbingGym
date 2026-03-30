@@ -2,7 +2,6 @@ package com.project.domain.gym;
 
 import com.project.domain.exception.InvalidPassException;
 import com.project.domain.exception.NoRemainingUsesException;
-import com.project.domain.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -22,9 +21,7 @@ public class UserPass {
     @JoinColumn(name = "pass_id")
     private Pass pass;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private String userId;
 
     private LocalDate validFrom;
     private LocalDate validUntil;
@@ -34,10 +31,10 @@ public class UserPass {
     protected UserPass() {
     }
 
-    public UserPass(Pass pass, User user, LocalDate validFrom) {
+    public UserPass(Pass pass, String userId, LocalDate validFrom) {
         this.id = UUID.randomUUID().toString();
         this.pass = pass;
-        this.user = user;
+        this.userId = userId;
         this.validFrom = validFrom;
         this.validUntil = validFrom.plusDays(pass.getValidDays());
         this.remainingUses = pass.getMaxUses();
@@ -79,8 +76,8 @@ public class UserPass {
         lastUsedAt = LocalDateTime.now();
     }
 
-    public User getUser() {
-        return user;
+    public String getUserId() {
+        return userId;
     }
 
     public LocalDateTime getLastUsedAt() {

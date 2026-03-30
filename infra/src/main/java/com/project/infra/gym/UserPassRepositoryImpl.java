@@ -24,6 +24,7 @@ public class UserPassRepositoryImpl implements UserPassRepository {
     }
 
     @Override
-    public void update(UserPass userPass) {
+    public boolean isFullyUsed(String userId, String passId) {
+        return !jpaRepository.existsByUserIdAndPass_IdAndRemainingUsesGreaterThan(userId, passId, 0);
     }
 }

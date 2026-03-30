@@ -3,8 +3,8 @@ package com.project.services.payment;
 import com.project.domain.exception.DomainException;
 import com.project.domain.exception.DuplicatePendingOrderException;
 import com.project.domain.exception.PaymentFailedException;
+import com.project.domain.exception.UnusedPassExistsException;
 import com.project.domain.gym.*;
-import com.project.domain.user.User;
 import com.project.domain.user.UserRepository;
 import com.project.services.gym.model.ConfirmedPassModel;
 import com.project.services.payment.model.PrepareOrderModel;
@@ -54,7 +54,9 @@ public class PaymentService {
             throw new DuplicatePendingOrderException();
         }
 
-        // TODO: 같은 passId 를 다 소진했는지 확인한다
+        if (!userPassRepository.isFullyUsed(userId, passId)) {
+            throw new UnusedPassExistsException();
+        }
 
         Order order = new Order(userId, passId, pass.getPrice(), LocalDateTime.now(clock));
         orderRepository.save(order);
@@ -96,9 +98,8 @@ public class PaymentService {
         // 4. UserPass 발급
         Gym gym = gymRepository.getById(gymId);
         Pass pass = gym.getPassById(passId);
-        User user = userRepository.getById(userId);
 
-        UserPass userPass = new UserPass(pass, user, LocalDate.now(clock));
+        UserPass userPass = new UserPass(pass, userId, LocalDate.now(clock));
         userPassRepository.add(userPass);
 
         return new ConfirmedPassModel(
