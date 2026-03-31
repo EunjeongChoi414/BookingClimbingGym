@@ -54,9 +54,10 @@ public class GymService {
 
         BusinessHours.validate(domainBusinessHours);
         Gym gym = new Gym(
-                name, address, contact, domainBusinessHours, domainPasses, owner,
+                name, address, contact, domainBusinessHours, domainPasses, owner.getId(),
                 maxCapacity, cancellationNoticeDays);
         gymRepository.add(gym);
+        owner.setIsManager(true);
 
         return gym.getId();
     }
@@ -108,7 +109,7 @@ public class GymService {
 
     public List<BookingModel> getGymBookings(String userId, String gymId) {
         Gym gym = gymRepository.getById(gymId);
-        if (!gym.getOwner().getId().equals(userId)) {
+        if (!gym.getOwnerId().equals(userId)) {
             throw new RuntimeException("권한이 없습니다.");
         }
 

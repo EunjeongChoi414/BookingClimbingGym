@@ -12,12 +12,13 @@ public class Pass {
     private String id;
     private String name;
     private BigDecimal price;
-    private int maxUses;
+    private Integer maxUses;
     private int validDays;
 
-    protected Pass() {}
+    protected Pass() {
+    }
 
-    public Pass(String name, BigDecimal price, int maxUses, int validDays) {
+    public Pass(String name, BigDecimal price, Integer maxUses, int validDays) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.price = price;
@@ -25,9 +26,23 @@ public class Pass {
         this.validDays = validDays;
     }
 
-    public String getId() {return id;}
-    public String getName() { return name; }
-    public BigDecimal getPrice() { return price; }
-    public int getMaxUses() { return maxUses; }
-    public int getValidDays() { return validDays; }
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public Integer getMaxUses() {
+        return maxUses;
+    }
+
+    public int getValidDays() {
+        return validDays;
+    }
 }

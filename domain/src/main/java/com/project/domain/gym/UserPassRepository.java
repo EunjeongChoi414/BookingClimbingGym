@@ -5,5 +5,5 @@ public interface UserPassRepository {
 
     void add(UserPass userPass);
 
-    void update(UserPass userPass);
+    boolean isFullyUsed(String userId, String passId);
 }

@@ -6,6 +6,8 @@ plugins {
 dependencies {
     implementation project(':services')
     implementation project(':common')
+    implementation project(':infra')
+    implementation project(':domain')
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 
     // spring
