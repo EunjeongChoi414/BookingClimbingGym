@@ -1,125 +1,122 @@
 # BookingClimbingGym
 
-A multi-module Spring Boot REST API for managing climbing gym reservations. Users can discover gyms, purchase passes,
-and book sessions, while gym managers can register their venues, manage capacity, and view bookings.
+클라이밍을 가기 전에 암장이 얼마나 붐비는지 미리 알 수 있으면 좋겠다는 생각에서 시작한 프로젝트입니다 :) 예약 인원을 기반으로 혼잡도를 조회하고, 정원이 찼을 때는 추가 입장을 막을 수 있는 예약 시스템을 멀티
+모듈 Spring Boot REST API로 구현했습니다. 사용자는 암장을 검색하고 이용권을 구매해 세션을 예약할 수 있으며, 암장 매니저는 시설 등록부터 수용 인원 관리, 예약 현황 확인까지 할 수 있습니다.
 
 ---
 
-## Table of Contents
+## 목차
 
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Testing](#testing)
-- [To Do](#to-do)
-
----
-
-## Features
-
-- **User Management** — Register, login, and manage accounts with JWT-based authentication
-- **Email Verification** — Verify email before registration via a time-limited ticket
-- **Gym Registration** — Managers can register gyms with business and bank account verification
-- **Gym Search** — Search gyms by keyword with pagination
-- **Pass Management** — Gyms offer passes with configurable uses and validity periods
-- **Booking System** — Book gym sessions using purchased passes
-- **Booking Cancellation** — Cancel bookings within the gym's cancellation notice window
-- **Crowdedness Check** — Query how busy a gym will be at a given date and time
-- **Manager View** — Gym owners can view all bookings for their gym
+- [기능](#기능)
+- [아키텍처](#아키텍처)
+- [기술 스택](#기술-스택)
+- [테스트](#테스트)
+- [할 일](#할-일)
 
 ---
 
-## Architecture
+## 기능
 
-The project follows a **Clean Architecture** / **Layered Architecture** pattern with strict separation of concerns
-across four layers:
+- **사용자 관리** — JWT 기반 인증으로 회원가입, 로그인, 계정 관리
+- **이메일 인증** — 시간 제한 티켓을 통한 회원가입 전 이메일 인증
+- **암장 등록** — 매니저가 사업자 및 계좌 인증을 통해 암장 등록
+- **암장 검색** — 키워드 기반 페이징 검색
+- **이용권 관리** — 사용 횟수 및 유효 기간을 설정할 수 있는 이용권 제공
+- **예약 시스템** — 구매한 이용권으로 암장 세션 예약
+- **예약 취소** — 암장의 취소 허용 기간 내 예약 취소
+- **혼잡도 조회** — 특정 날짜 및 시간대의 암장 혼잡도 조회
+- **매니저 뷰** — 암장 소유자가 모든 예약 내역 확인
+
+---
+
+## 아키텍처
+
+이 프로젝트는 4개의 레이어로 엄격하게 관심사를 분리하는 **클린 아키텍처** / **레이어드 아키텍처** 패턴을 따릅니다:
 
 ```
 ┌─────────────────────────────────────────┐
-│                   API                   │  Controllers, DTOs, Response wrappers
+│                   API                   │  컨트롤러, DTO, 응답 래퍼
 ├─────────────────────────────────────────┤
-│                Services                 │  Business logic, orchestration
+│                Services                 │  비즈니스 로직, 오케스트레이션
 ├─────────────────────────────────────────┤
-│                 Domain                  │  Entities, repository interfaces
+│                 Domain                  │  엔티티, 레포지토리 인터페이스
 ├─────────────────────────────────────────┤
-│                  Infra                  │  Repository implementations, external adapters
+│                  Infra                  │  레포지토리 구현체, 외부 어댑터
 └─────────────────────────────────────────┘
-         Common (shared utilities across all layers)
+         Common (전 레이어에서 공유하는 유틸리티)
 ```
 
-Each module only depends on lower-level modules. The `domain` module defines repository interfaces that `infra`
-implements — the service layer never touches persistence directly.
+각 모듈은 하위 모듈에만 의존합니다. `domain` 모듈이 레포지토리 인터페이스를 정의하고 `infra`가 이를 구현하며, 서비스 레이어는 영속성 계층에 직접 접근하지 않습니다.
 
 ---
 
-## Tech Stack
+## 기술 스택
 
-| Category         | Technology                                  |
-|------------------|---------------------------------------------|
-| Language         | Java 17                                     |
-| Framework        | Spring Boot 4.0.3                           |
-| Build Tool       | Gradle 9.3.1 (multi-module)                 |
-| Authentication   | JJWT 0.12.6 (JWT tokens)                    |
-| Password Hashing | Spring Security Crypto (BCrypt)             |
-| Validation       | Jakarta Validation / Hibernate Validator    |
-| Email            | Spring Boot Mail (SMTP)                     |
-| Testing          | JUnit 5, Mockito, Spring Boot Test, MockMvc |
-| Code Generation  | Lombok                                      |
-| Serialization    | Jackson                                     |
-| Storage          | In-memory (ConcurrentHashMap)               |
+| 분류      | 기술                                          |
+|---------|---------------------------------------------|
+| 언어      | Java 17                                     |
+| 프레임워크   | Spring Boot 4.0.3                           |
+| 빌드 도구   | Gradle 9.3.1 (멀티 모듈)                        |
+| 인증      | JJWT 0.12.6 (JWT 토큰)                        |
+| 비밀번호 해싱 | Spring Security Crypto (BCrypt)             |
+| 유효성 검사  | Jakarta Validation / Hibernate Validator    |
+| 이메일     | Spring Boot Mail (SMTP)                     |
+| 테스트     | JUnit 5, Mockito, Spring Boot Test, MockMvc |
+| 코드 생성   | Lombok                                      |
+| 직렬화     | Jackson                                     |
+| 저장소     | 인메모리 (ConcurrentHashMap)                    |
 
 ---
 
-## Testing
+## 테스트
 
-The project has both **unit tests** and **integration tests**.
+프로젝트는 **단위 테스트**와 **통합 테스트**를 모두 포함합니다.
 
-### Unit Tests (`services` module)
+### 단위 테스트 (`services` 모듈)
 
-Use JUnit 5 + Mockito with all dependencies mocked. A fixed `Clock` is used for deterministic time-based assertions.
+모든 의존성을 모킹한 JUnit 5 + Mockito를 사용합니다.
 
-| Test Class          | Coverage                                                     |
-|---------------------|--------------------------------------------------------------|
-| `UserServiceTests`  | Registration, login, token validation, password mismatch     |
-| `GymServiceTests`   | Gym registration, pass booking, pass validation, crowdedness |
-| `EmailServiceTests` | Sending codes, verifying codes, invalid/expired codes        |
+| 테스트 클래스             | 커버리지                           |
+|---------------------|--------------------------------|
+| `UserServiceTests`  | 회원가입, 로그인, 토큰 검증, 비밀번호 불일치     |
+| `GymServiceTests`   | 암장 등록, 이용권 예약, 이용권 유효성 검사, 혼잡도 |
+| `EmailServiceTests` | 코드 발송, 코드 인증, 유효하지 않거나 만료된 코드  |
 
-### Integration Tests (`api` module)
+### 통합 테스트 (`api` 모듈)
 
-Use Spring Boot Test with `MockMvc` and real in-memory repositories wired together.
+Spring Boot Test와 `MockMvc`, 실제 인메모리 레포지토리를 연결하여 사용합니다.
 
-| Test Class             | Coverage                                               |
+| 테스트 클래스                | 커버리지                                                   |
 |------------------------|--------------------------------------------------------|
 | `UserControllerTests`  | `POST /app/users`, `GET /app/users/auto-login`         |
-| `GymControllerTests`   | `POST /app/gyms`, business verification endpoints      |
+| `GymControllerTests`   | `POST /app/gyms`, 사업자 인증 엔드포인트                         |
 | `EmailControllerTests` | `POST /app/email/code`, `POST /app/email/verification` |
 
-## To Do
+## 할 일
 
-### Features to Add
+### 추가할 기능
 
-- [ ] Add Gym photos
-- [ ] Implement pass purchase logic
+- [ ] 암장 사진 추가
 
-### Technical Improvements
+### 기술적 개선 사항
 
-- [ ] Add logic in the API layer to return different response codes based on domain exceptions *(Should the API layer
-  even be aware of domain exceptions?)*
-- [ ] Connect to a database
-- [ ] Add unit tests for the Domain layer
-- [ ] Implement `SmtpEmailService`
-- [ ] Add QR check-in flow
-- [ ] Set up Docker / development environment
+- [ ] 도메인 예외에 따라 다른 응답 코드를 반환하는 API 레이어 로직 추가 *(API 레이어가 도메인 예외를 알아야 하는가?)*
+- [x] 데이터베이스 연결
+- [ ] Domain 레이어 단위 테스트 추가
+- [x] `SmtpEmailService` 구현
+- [ ] QR 체크인 플로우 추가
+- [x] Docker / 개발 환경 설정
 
-### Refactoring
+### 리팩토링
 
-- [ ] Email verification codes don't need to be stored permanently — consider storing them in Redis (or similar) for TTL
-  management instead of the database
+- [ ] 이메일 인증 코드는 영구 저장이 불필요 — TTL 관리를 위해 Redis(또는 유사 솔루션)에 저장하는 방안 검토
+- [ ] JpaRepository 를 구현하는 interface repository 를 바로 사용하는 것으로 리팩토링
+- [ ] 클린코드 아키텍처에서 spring mvc 구조로 리팩토링하기
 
-### Testing
+### 테스트
 
-- [ ] Find a way to test the payment flow
+- [ ] 결제 플로우 테스트 방법 모색
 
-### Open Technical Questions
+### 기술적 미결 사항
 
-- [ ] How can we validate a Gym business? (e.g. verifying legitimacy)
+- [ ] 암장 사업자 검증 방법은? (예: 합법성 확인)
