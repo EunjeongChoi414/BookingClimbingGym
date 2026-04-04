@@ -1,0 +1,33 @@
+package com.project.gym.dto;
+
+import com.project.gym.dto.BookingModel;
+import com.project.gym.dto.UserGymModel;
+import com.project.gym.dto.UserPassModel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@AllArgsConstructor
+public class GetGymMyDetailRes {
+    private List<UserPass> passes;
+    private List<UserBooking> bookings;
+
+    public static GetGymMyDetailRes from(UserGymModel userGymModel) {
+        List<UserPass> passes = new ArrayList<>();
+        for (UserPassModel p : userGymModel.pass()) {
+            passes.add(new UserPass(
+                    p.getPassId(), p.getName(), p.getValidFrom(), p.getValidUntil(), p.getRemainingUses()
+            ));
+        }
+
+        List<UserBooking> bookings = new ArrayList<>();
+        for (BookingModel b : userGymModel.bookings()) {
+            bookings.add(new UserBooking(b.id(), b.dateTime()));
+        }
+
+        return new GetGymMyDetailRes(passes, bookings);
+    }
+}

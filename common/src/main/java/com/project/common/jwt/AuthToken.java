@@ -1,4 +1,4 @@
-package com.project.common;
+package com.project.common.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

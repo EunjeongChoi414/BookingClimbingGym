@@ -1,3 +1,10 @@
 rootProject.name = 'BookingClimbingGym'
 
-include(':api', ':services', ':infra', ':domain', ':common')
+include(
+    ':api-gateway',
+    ':common',
+    ':user-service',
+    ':email-service',
+    ':gym-service',
+    ':payment-service'
+)
