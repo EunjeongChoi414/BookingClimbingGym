@@ -136,7 +136,7 @@ public class GymController {
         String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         List<BookingModel> bookingModels = gymService.getGymBookings(userId, gymId);
 
-        List<Booking> bookings = GymDtoMap per.toBookingDtos(bookingModels);
+        List<Booking> bookings = GymDtoMapper.toBookingDtos(bookingModels);
 
         return responseService.getSuccessResponse(new GetGymBookingsRes(bookings));
     }
