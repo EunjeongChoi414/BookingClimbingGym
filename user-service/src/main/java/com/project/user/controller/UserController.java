@@ -6,6 +6,7 @@ import com.project.user.dto.RegisterUserReq;
 import com.project.user.dto.RegisterUserRes;
 import com.project.user.dto.RegisteredUserInfo;
 import com.project.user.service.UserService;
+import com.project.common.jwt.JwtRequired;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +29,13 @@ public class UserController {
     }
 
     // 자동 로그인
+    @JwtRequired
     @GetMapping("/auto-login")
     public BaseResponse<String> autoLogin(
-            @RequestHeader(value = "Authorization", required = false) String token
+            @RequestAttribute(name = "userId") String userId
     ) {
-        String userId = userService.loginUser(token == null ? null : token.substring("Bearer ".length()));
+        String loggedInUserId = userService.loginUser(userId);
 
-        return responseService.getSuccessResponse(userId);
+        return responseService.getSuccessResponse(loggedInUserId);
     }
 }

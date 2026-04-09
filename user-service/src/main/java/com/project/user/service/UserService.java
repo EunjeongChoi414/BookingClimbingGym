@@ -3,11 +3,9 @@ package com.project.user.service;
 import com.project.common.jwt.AuthToken;
 import com.project.user.dto.RegisteredUserInfo;
 import com.project.user.entity.User;
-import com.project.user.exception.NeedToLoginAgainException;
 import com.project.user.exception.NeedToSignupException;
 import com.project.user.exception.PasswordMismatchException;
 import com.project.user.repository.UserRepository;
-import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,25 +41,13 @@ public class UserService {
         return new RegisteredUserInfo(token.getToken(), user.getId());
     }
 
-    public String loginUser(String token) {
-        if (token == null) throw new NeedToSignupException();
-        AuthToken parsedToken;
-        try {
-            parsedToken = AuthToken.parse(token, jwtSecret);
-        } catch (ExpiredJwtException e) {
-            throw new NeedToLoginAgainException();
-        }
+    public String loginUser(String userId) {
+        if (userId == null) throw new NeedToSignupException();
 
-        String userId = parsedToken.getUserId();
         User user = userRepository.getById(userId);
         user.setLastLoginAt(LocalDateTime.now(clock));
 
         return userId;
-    }
-
-    public String getUserIdFromToken(String token) {
-        AuthToken parsedToken = AuthToken.parse(token, jwtSecret);
-        return parsedToken.getUserId();
     }
 
     public void setManager(String userId) {

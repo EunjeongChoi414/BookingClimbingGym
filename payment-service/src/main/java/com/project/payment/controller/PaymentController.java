@@ -1,14 +1,10 @@
 package com.project.payment.controller;
 
+import com.project.common.jwt.JwtRequired;
 import com.project.common.response.BaseResponse;
 import com.project.common.response.ResponseService;
-import com.project.payment.dto.ConfirmPaymentReq;
-import com.project.payment.dto.ConfirmPaymentRes;
-import com.project.payment.dto.ConfirmedPassModel;
-import com.project.payment.dto.PrepareOrderModel;
-import com.project.payment.dto.PreparePaymentRes;
+import com.project.payment.dto.*;
 import com.project.payment.service.PaymentService;
-import com.project.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +23,6 @@ public class PaymentController {
 
     private final ResponseService responseService = new ResponseService();
     private final PaymentService paymentService;
-    private final UserService userService;
 
     // 토스페이먼츠 결제 성공 콜백
     @GetMapping("/app/payment/success")
@@ -65,13 +60,12 @@ public class PaymentController {
     }
 
     // Pass 카드 구매 — 1단계: 결제 준비 (orderId 발급)
+    @JwtRequired
     @PostMapping("/app/gyms/{gymId}/passes/{passId}/payment/prepare")
     public BaseResponse<PreparePaymentRes> preparePayment(
-            @RequestHeader("Authorization") String token,
+            @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
             @PathVariable String passId) {
-
-        String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         PrepareOrderModel model = paymentService.prepareOrder(userId, gymId, passId);
 
         return responseService.getSuccessResponse(
@@ -79,14 +73,14 @@ public class PaymentController {
     }
 
     // Pass 카드 구매 — 2단계: 결제 확인 & UserPass 발급
+    @JwtRequired
     @PostMapping("/app/gyms/{gymId}/passes/{passId}/payment/confirm")
     public BaseResponse<ConfirmPaymentRes> confirmPayment(
-            @RequestHeader("Authorization") String token,
+            @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
             @PathVariable String passId,
             @RequestBody @Valid ConfirmPaymentReq req) {
 
-        String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         ConfirmedPassModel model = paymentService.confirmOrder(
                 userId, gymId, passId, req.paymentKey(), req.orderId(), req.amount());
 
