@@ -2,6 +2,8 @@ package com.project.services.booking;
 
 import com.project.domain.booking.Booking;
 import com.project.domain.booking.BookingRepository;
+import com.project.domain.exception.DomainException;
+import com.project.domain.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,7 +17,7 @@ public class BookingService {
     public void cancelBooking(String userId, String bookingId) {
         Booking booking = bookingRepository.getById(bookingId);
         if (!booking.getUserId().equals(userId)) {
-            throw new RuntimeException("올바른 예약이 아닙니다.");
+            throw new DomainException(ErrorCode.INVALID_BOOKING);
         }
 
         bookingRepository.delete(booking);

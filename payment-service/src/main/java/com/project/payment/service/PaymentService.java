@@ -1,9 +1,7 @@
 package com.project.payment.service;
 
 import com.project.common.exception.DomainException;
-import com.project.payment.exception.DuplicatePendingOrderException;
-import com.project.payment.exception.PaymentFailedException;
-import com.project.payment.exception.UnusedPassExistsException;
+import com.project.common.exception.ErrorCode;
 import com.project.gym.entity.Gym;
 import com.project.gym.entity.Order;
 import com.project.gym.entity.Pass;
@@ -59,11 +57,11 @@ public class PaymentService {
         Pass pass = gym.getPassById(passId);
 
         if (orderRepository.existsPending(userId, passId)) {
-            throw new DuplicatePendingOrderException();
+            throw new DomainException(ErrorCode.DUPLICATE_PENDING_ORDER);
         }
 
         if (!userPassRepository.isFullyUsed(userId, passId)) {
-            throw new UnusedPassExistsException();
+            throw new DomainException(ErrorCode.UNUSED_PASS_EXISTS);
         }
 
         Order order = new Order(userId, passId, pass.getPrice(), LocalDateTime.now(clock));
@@ -96,7 +94,7 @@ public class PaymentService {
 
         if (!result.isSuccess()) {
             fail(order);
-            throw new PaymentFailedException(result.getErrorMessage());
+            throw new DomainException(ErrorCode.PAYMENT_FAILED);
         }
 
         // 3. 결제 완료 처리

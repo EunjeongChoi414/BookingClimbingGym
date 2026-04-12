@@ -1,8 +1,7 @@
 package com.project.payment.controller;
 
 import com.project.common.jwt.JwtRequired;
-import com.project.common.response.BaseResponse;
-import com.project.common.response.ResponseService;
+import com.project.common.response.ApiResponse;
 import com.project.payment.dto.*;
 import com.project.payment.service.PaymentService;
 import jakarta.validation.Valid;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final ResponseService responseService = new ResponseService();
     private final PaymentService paymentService;
 
     // 토스페이먼츠 결제 성공 콜백
@@ -62,20 +60,19 @@ public class PaymentController {
     // Pass 카드 구매 — 1단계: 결제 준비 (orderId 발급)
     @JwtRequired
     @PostMapping("/app/gyms/{gymId}/passes/{passId}/payment/prepare")
-    public BaseResponse<PreparePaymentRes> preparePayment(
+    public ApiResponse<PreparePaymentRes> preparePayment(
             @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
             @PathVariable String passId) {
         PrepareOrderModel model = paymentService.prepareOrder(userId, gymId, passId);
 
-        return responseService.getSuccessResponse(
-                new PreparePaymentRes(model.orderId(), model.amount(), model.passName()));
+        return ApiResponse.success(new PreparePaymentRes(model.orderId(), model.amount(), model.passName()));
     }
 
     // Pass 카드 구매 — 2단계: 결제 확인 & UserPass 발급
     @JwtRequired
     @PostMapping("/app/gyms/{gymId}/passes/{passId}/payment/confirm")
-    public BaseResponse<ConfirmPaymentRes> confirmPayment(
+    public ApiResponse<ConfirmPaymentRes> confirmPayment(
             @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
             @PathVariable String passId,
@@ -84,7 +81,7 @@ public class PaymentController {
         ConfirmedPassModel model = paymentService.confirmOrder(
                 userId, gymId, passId, req.paymentKey(), req.orderId(), req.amount());
 
-        return responseService.getSuccessResponse(
+        return ApiResponse.success(
                 new ConfirmPaymentRes(model.userPassId(), model.passName(), model.validUntil(), model.remainingUses()));
     }
 }

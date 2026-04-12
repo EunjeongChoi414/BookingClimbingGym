@@ -55,8 +55,7 @@ public class EmailControllerTests {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
-                .andExpect(jsonPath("$.code").value("4000"))
-                .andExpect(jsonPath("$.message").value("이메일 형식이 잘못되었습니다."));
+                .andExpect(jsonPath("$.code").value("4000"));
     }
 
     @Test

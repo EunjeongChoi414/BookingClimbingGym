@@ -1,6 +1,7 @@
 package com.project.common.jwt;
 
-import com.project.common.exception.UnauthorizedException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,7 +41,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
         if (method.hasMethodAnnotation(JwtRequired.class)) {
             String userId = (String) request.getAttribute(USER_ID_ATTRIBUTE);
-            if (userId == null) throw new UnauthorizedException();
+            if (userId == null) throw new DomainException(ErrorCode.UNAUTHORIZED);
         }
 
         return true;

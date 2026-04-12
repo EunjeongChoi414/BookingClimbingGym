@@ -1,11 +1,13 @@
 package com.project.domain.exception;
 
-public class DomainException extends RuntimeException {
-    public DomainException() {
-        super();
-    }
+import lombok.Getter;
 
-    public DomainException(String message) {
-        super(message);
+@Getter
+public class DomainException extends RuntimeException {
+    private final ErrorCode errorCode;
+
+    public DomainException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 }

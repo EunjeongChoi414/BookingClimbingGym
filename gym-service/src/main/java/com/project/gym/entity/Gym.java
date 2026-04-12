@@ -1,6 +1,7 @@
 package com.project.gym.entity;
 
-import com.project.gym.exception.InvalidPassException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -85,7 +86,7 @@ public class Gym {
         return passes.stream()
                 .filter(p -> p.getId().equals(passId))
                 .findFirst()
-                .orElseThrow(InvalidPassException::new);
+                .orElseThrow(() -> new DomainException(ErrorCode.INVALID_PASS));
     }
 
     public CrowdednessLevel getCrowdedness(int bookingCount) {

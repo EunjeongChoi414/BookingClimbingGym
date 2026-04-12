@@ -1,8 +1,8 @@
 package com.project.gym.repository;
 
-import com.project.gym.exception.OrderNotFoundException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import com.project.gym.entity.Order;
-import com.project.gym.repository.OrderRepository;
 import com.project.gym.entity.OrderStatus;
 import org.springframework.stereotype.Repository;
 
@@ -23,7 +23,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Order getById(String orderId) {
         return jpaRepository.findById(orderId)
-                .orElseThrow(OrderNotFoundException::new);
+                .orElseThrow(() -> new DomainException(ErrorCode.ORDER_NOT_FOUND));
     }
 
     @Override

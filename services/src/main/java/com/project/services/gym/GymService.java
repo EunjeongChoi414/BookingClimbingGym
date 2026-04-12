@@ -2,6 +2,8 @@ package com.project.services.gym;
 
 import com.project.common.BusinessRegistrationTicket;
 import com.project.domain.booking.Booking;
+import com.project.domain.exception.DomainException;
+import com.project.domain.exception.ErrorCode;
 import com.project.domain.booking.BookingRepository;
 import com.project.domain.gym.*;
 import com.project.domain.user.User;
@@ -110,7 +112,7 @@ public class GymService {
     public List<BookingModel> getGymBookings(String userId, String gymId) {
         Gym gym = gymRepository.getById(gymId);
         if (!gym.getOwnerId().equals(userId)) {
-            throw new RuntimeException("권한이 없습니다.");
+            throw new DomainException(ErrorCode.UNAUTHORIZED);
         }
 
         List<Booking> gymBookings = bookingRepository.getAllBy(gymId);

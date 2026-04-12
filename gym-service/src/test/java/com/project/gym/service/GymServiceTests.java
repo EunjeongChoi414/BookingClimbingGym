@@ -1,13 +1,19 @@
 package com.project.gym.service;
 
+import com.project.common.exception.DomainException;
 import com.project.gym.dto.BookedWithPassModel;
 import com.project.gym.dto.BusinessHoursModel;
 import com.project.gym.dto.GymDetailModel;
 import com.project.gym.dto.PassModel;
-import com.project.gym.entity.*;
-import com.project.gym.exception.InvalidPassException;
+import com.project.gym.entity.BusinessHours;
+import com.project.gym.entity.Gym;
+import com.project.gym.entity.Pass;
+import com.project.gym.entity.UserPass;
 import com.project.gym.port.BusinessVerifier;
-import com.project.gym.repository.*;
+import com.project.gym.repository.BookingRepository;
+import com.project.gym.repository.GymRepository;
+import com.project.gym.repository.UserGymRepository;
+import com.project.gym.repository.UserPassRepository;
 import com.project.user.entity.User;
 import com.project.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +114,7 @@ class GymServiceTests {
         UserPass userPass = new UserPass(gym.getPasses().get(0), user.getId(), validFrom);
         when(userPassRepository.getById(userPass.getId())).thenReturn(userPass);
 
-        assertThrows(InvalidPassException.class, () -> {
+        assertThrows(DomainException.class, () -> {
             sut.bookGymWithPass(user.getId(), gym.getId(), userPass.getId(), bookedAt);
         });
     }

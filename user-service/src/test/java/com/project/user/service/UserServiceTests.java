@@ -1,9 +1,9 @@
 package com.project.user.service;
 
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import com.project.user.dto.RegisteredUserInfo;
 import com.project.user.entity.User;
-import com.project.user.exception.NeedToSignupException;
-import com.project.user.exception.PasswordMismatchException;
 import com.project.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,9 +52,10 @@ class UserServiceTests {
         String password = "password";
         String passwordConfirm = "not-matched-password";
 
-        assertThrows(PasswordMismatchException.class, () -> {
+        DomainException ex = assertThrows(DomainException.class, () -> {
             sut.registerUser(email, password, passwordConfirm);
         });
+        assertEquals(ErrorCode.PASSWORD_NOT_MATCH, ex.getErrorCode());
     }
 
     @Test
@@ -70,6 +71,7 @@ class UserServiceTests {
 
     @Test
     void loginUser_failsWhenUserIdNotExist() {
-        assertThrows(NeedToSignupException.class, () -> sut.loginUser(null));
+        DomainException ex = assertThrows(DomainException.class, () -> sut.loginUser(null));
+        assertEquals(ErrorCode.NEED_TO_SIGNUP, ex.getErrorCode());
     }
 }

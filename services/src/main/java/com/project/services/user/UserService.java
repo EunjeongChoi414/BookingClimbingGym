@@ -1,9 +1,8 @@
 package com.project.services.user;
 
 import com.project.common.AuthToken;
-import com.project.domain.exception.NeedToLoginAgainException;
-import com.project.domain.exception.NeedToSignupException;
-import com.project.domain.exception.PasswordMismatchException;
+import com.project.domain.exception.DomainException;
+import com.project.domain.exception.ErrorCode;
 import com.project.domain.user.User;
 import com.project.domain.user.UserRepository;
 import com.project.services.user.model.RegisteredUserInfo;
@@ -31,8 +30,7 @@ public class UserService {
     }
 
     public RegisteredUserInfo registerUser(String email, String password, String passwordCheck) {
-        var isEqual = password.equals(passwordCheck);
-        if (!isEqual) throw new PasswordMismatchException();
+        if (!password.equals(passwordCheck)) throw new DomainException(ErrorCode.PASSWORD_NOT_MATCH);
 
         String hashedPassword = passwordEncoder.encode(password);
         User user = new User(email, hashedPassword, clock);
@@ -44,12 +42,12 @@ public class UserService {
     }
 
     public String loginUser(String token) {
-        if (token == null) throw new NeedToSignupException();
+        if (token == null) throw new DomainException(ErrorCode.NEED_TO_SIGNUP);
         AuthToken parsedToken;
         try {
             parsedToken = AuthToken.parse(token, jwtSecret);
         } catch (ExpiredJwtException e) {
-            throw new NeedToLoginAgainException();
+            throw new DomainException(ErrorCode.NEED_TO_LOGIN_AGAIN);
         }
 
         String userId = parsedToken.getUserId();

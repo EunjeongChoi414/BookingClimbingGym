@@ -1,9 +1,7 @@
 package com.project.gym.entity;
 
-import com.project.gym.exception.AlreadyProcessedException;
-import com.project.gym.exception.AmountMismatchException;
-import com.project.gym.exception.OrderExpiredException;
-import com.project.common.exception.UnauthorizedException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -50,16 +48,16 @@ public class Order {
     public void validateForConfirm(
             String userId, BigDecimal clientAmount, LocalDateTime now) {
         if (!this.userId.equals(userId)) {
-            throw new UnauthorizedException();
+            throw new DomainException(ErrorCode.UNAUTHORIZED);
         }
         if (this.amount.compareTo(clientAmount) != 0) {
-            throw new AmountMismatchException();
+            throw new DomainException(ErrorCode.AMOUNT_MISMATCH);
         }
         if (this.status != OrderStatus.PENDING) {
-            throw new AlreadyProcessedException();
+            throw new DomainException(ErrorCode.ALREADY_PROCESSED);
         }
         if (now.isAfter(this.expiresAt)) {
-            throw new OrderExpiredException();
+            throw new DomainException(ErrorCode.ORDER_EXPIRED);
         }
     }
 

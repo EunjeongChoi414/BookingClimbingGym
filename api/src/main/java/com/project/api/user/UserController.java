@@ -1,8 +1,6 @@
 package com.project.api.user;
 
-import com.project.api.response.BaseResponse;
-import com.project.api.response.ResponseService;
-import com.project.api.response.exception.ExceptionStatus;
+import com.project.api.response.ApiResponse;
 import com.project.api.user.dto.RegisterUserReq;
 import com.project.api.user.dto.RegisterUserRes;
 import com.project.services.email.EmailService;
@@ -16,29 +14,28 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/app/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final ResponseService responseService = new ResponseService();
     private final EmailService emailService;
     private final UserService userService;
 
     //유저 회원가입
     @PostMapping("")
-    public BaseResponse<RegisterUserRes> registerUser(@RequestBody @Valid RegisterUserReq req) {
+    public ApiResponse<RegisterUserRes> registerUser(@RequestBody @Valid RegisterUserReq req) {
         emailService.checkIfEmailVerified(req.getTicket(), req.getEmail());
 
         RegisteredUserInfo userInfo = userService.registerUser(
                 req.getEmail(), req.getPassword(), req.getPasswordConfirm());
         var res = new RegisterUserRes(userInfo.jwt(), userInfo.userId());
 
-        return responseService.getSuccessResponse(res);
+        return ApiResponse.success(res);
     }
 
     // 자동 로그인
     @GetMapping("/auto-login")
-    public BaseResponse<String> autoLogin(
+    public ApiResponse<String> autoLogin(
             @RequestHeader(value = "Authorization", required = false) String token
     ) {
         String userId = userService.loginUser(token == null ? null : token.substring("Bearer ".length()));
 
-        return responseService.getSuccessResponse(userId);
+        return ApiResponse.success(userId);
     }
 }

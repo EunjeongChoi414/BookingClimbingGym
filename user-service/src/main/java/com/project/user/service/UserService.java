@@ -1,10 +1,10 @@
 package com.project.user.service;
 
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import com.project.common.jwt.AuthToken;
 import com.project.user.dto.RegisteredUserInfo;
 import com.project.user.entity.User;
-import com.project.user.exception.NeedToSignupException;
-import com.project.user.exception.PasswordMismatchException;
 import com.project.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,8 +29,7 @@ public class UserService {
     }
 
     public RegisteredUserInfo registerUser(String email, String password, String passwordCheck) {
-        var isEqual = password.equals(passwordCheck);
-        if (!isEqual) throw new PasswordMismatchException();
+        if (!password.equals(passwordCheck)) throw new DomainException(ErrorCode.PASSWORD_NOT_MATCH);
 
         String hashedPassword = passwordEncoder.encode(password);
         User user = new User(email, hashedPassword, clock);
@@ -42,7 +41,7 @@ public class UserService {
     }
 
     public String loginUser(String userId) {
-        if (userId == null) throw new NeedToSignupException();
+        if (userId == null) throw new DomainException(ErrorCode.NEED_TO_SIGNUP);
 
         User user = userRepository.getById(userId);
         user.setLastLoginAt(LocalDateTime.now(clock));

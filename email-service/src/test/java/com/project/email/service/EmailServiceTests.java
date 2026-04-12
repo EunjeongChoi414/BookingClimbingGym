@@ -1,9 +1,9 @@
 package com.project.email.service;
 
-import com.project.common.exception.NeedEmailVerificationException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import com.project.common.jwt.SignUpTicket;
 import com.project.email.entity.Email;
-import com.project.email.exception.EmailCodeMismatchException;
 import com.project.email.port.EmailSender;
 import com.project.email.repository.EmailRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,8 +51,9 @@ class EmailServiceTests {
         String code = "wrong-code";
         when(emailRepository.findEmailById(email.getId())).thenReturn(email);
 
-        assertThrows(EmailCodeMismatchException.class,
+        DomainException ex = assertThrows(DomainException.class,
                 () -> sut.verifyEmail(emailAddress, code));
+        assertEquals(ErrorCode.INVALID_EMAIL_CODE, ex.getErrorCode());
     }
 
     @Test
@@ -68,7 +69,8 @@ class EmailServiceTests {
         String ticket = SignUpTicket.issue("other@example.com", SECRET).getToken();
         String email = "user@example.com";
 
-        assertThrows(NeedEmailVerificationException.class,
+        DomainException ex = assertThrows(DomainException.class,
                 () -> sut.checkIfEmailVerified(ticket, email));
+        assertEquals(ErrorCode.NEED_EMAIL_VERIFICATION, ex.getErrorCode());
     }
 }
