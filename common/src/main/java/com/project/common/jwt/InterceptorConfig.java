@@ -1,6 +1,5 @@
-package com.project.gateway;
+package com.project.common.jwt;
 
-import com.project.common.jwt.JwtAuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
