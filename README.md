@@ -100,7 +100,7 @@ Spring Boot Test와 `MockMvc`, 실제 인메모리 레포지토리를 연결하�
 
 ### 기술적 개선 사항
 
-- [ ] 도메인 예외에 따라 다른 응답 코드를 반환하는 API 레이어 로직 추가 *(API 레이어가 도메인 예외를 알아야 하는가?)*
+- [x] 도메인 예외에 따라 다른 응답 코드를 반환하는 API 레이어 로직 추가 *(API 레이어가 도메인 예외를 알아야 하는가?)*
 - [x] 데이터베이스 연결
 - [ ] Domain 레이어 단위 테스트 추가
 - [x] `SmtpEmailService` 구현
@@ -110,8 +110,8 @@ Spring Boot Test와 `MockMvc`, 실제 인메모리 레포지토리를 연결하�
 ### 리팩토링
 
 - [ ] 이메일 인증 코드는 영구 저장이 불필요 — TTL 관리를 위해 Redis(또는 유사 솔루션)에 저장하는 방안 검토
-- [ ] JpaRepository 를 구현하는 interface repository 를 바로 사용하는 것으로 리팩토링
-- [ ] 클린코드 아키텍처에서 spring mvc 구조로 리팩토링하기
+- [x] JpaRepository 를 구현하는 interface repository 를 바로 사용하는 것으로 리팩토링
+- [x] 클린코드 아키텍처에서 spring mvc 구조로 리팩토링하기
 
 ### 테스트
 
