@@ -1,4 +1,4 @@
-package com.project.payment.adapter;
+package com.project.gym.adapter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

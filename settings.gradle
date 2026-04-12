@@ -1,10 +1,9 @@
 rootProject.name = 'BookingClimbingGym'
 
 include(
-    ':api-gateway',
-    ':common',
-    ':user-service',
-    ':email-service',
-    ':gym-service',
-    ':payment-service'
+        ':api-gateway',
+        ':common',
+        ':user-service',
+        ':email-service',
+        ':gym-service'
 )

@@ -1,8 +1,8 @@
-package com.project.payment.dto;
+package com.project.gym.dto;
 
 import java.time.LocalDate;
 
-public record ConfirmPaymentRes(
+public record ConfirmedPassModel(
         String userPassId,
         String passName,
         LocalDate validUntil,

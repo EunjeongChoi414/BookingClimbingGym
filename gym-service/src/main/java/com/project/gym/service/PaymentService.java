@@ -1,14 +1,14 @@
-package com.project.payment.service;
+package com.project.gym.service;
 
 import com.project.common.exception.DomainException;
 import com.project.common.exception.ErrorCode;
+import com.project.gym.dto.ConfirmedPassModel;
+import com.project.gym.dto.PrepareOrderModel;
 import com.project.gym.entity.*;
 import com.project.gym.port.PaymentClient;
 import com.project.gym.repository.GymRepository;
+import com.project.gym.repository.OrderRepository;
 import com.project.gym.repository.UserPassRepository;
-import com.project.payment.dto.ConfirmedPassModel;
-import com.project.payment.dto.PrepareOrderModel;
-import com.project.payment.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;

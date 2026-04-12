@@ -1,9 +1,9 @@
-package com.project.payment.adapter;
+package com.project.gym.adapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.gym.port.PaymentClient;
 import com.project.gym.entity.PaymentConfirmResult;
+import com.project.gym.port.PaymentClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;

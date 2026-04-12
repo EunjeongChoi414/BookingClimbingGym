@@ -1,9 +1,9 @@
-package com.project.payment.controller;
+package com.project.gym.controller;
 
 import com.project.common.jwt.JwtRequired;
 import com.project.common.response.ApiResponse;
-import com.project.payment.dto.*;
-import com.project.payment.service.PaymentService;
+import com.project.gym.dto.*;
+import com.project.gym.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

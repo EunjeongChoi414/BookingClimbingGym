@@ -1,11 +1,11 @@
-package com.project.payment.dto;
+package com.project.gym.dto;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record ConfirmedPassModel(
+public record ConfirmPaymentRes(
         String userPassId,
         String passName,
         LocalDate validUntil,
         int remainingUses
-) {}
+) {
+}

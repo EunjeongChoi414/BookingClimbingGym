@@ -1,4 +1,4 @@
-package com.project.payment.dto;
+package com.project.gym.dto;
 
 import java.math.BigDecimal;
 

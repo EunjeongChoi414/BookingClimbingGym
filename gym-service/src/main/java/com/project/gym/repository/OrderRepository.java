@@ -1,4 +1,4 @@
-package com.project.payment.repository;
+package com.project.gym.repository;
 
 import com.project.common.exception.DomainException;
 import com.project.common.exception.ErrorCode;
