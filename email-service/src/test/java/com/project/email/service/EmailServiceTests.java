@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +38,7 @@ class EmailServiceTests {
     void verifyEmail() {
         String emailAddress = "user@example.com";
         Email email = new Email(emailAddress);
-        when(emailRepository.findEmailById(email.getId())).thenReturn(email);
+        when(emailRepository.findById(email.getId())).thenReturn(Optional.of(email));
         String code = email.getCode();
 
         String ticket = sut.verifyEmail(emailAddress, code);
@@ -49,7 +51,7 @@ class EmailServiceTests {
         String emailAddress = "user@example.com";
         Email email = new Email(emailAddress);
         String code = "wrong-code";
-        when(emailRepository.findEmailById(email.getId())).thenReturn(email);
+        when(emailRepository.findById(email.getId())).thenReturn(Optional.of(email));
 
         DomainException ex = assertThrows(DomainException.class,
                 () -> sut.verifyEmail(emailAddress, code));

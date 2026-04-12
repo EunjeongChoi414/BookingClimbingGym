@@ -1,8 +1,7 @@
 package com.project.user.repository;
 
 import com.project.user.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository {
-    User getById(String userId);
-    void create(User user);
+public interface UserRepository extends JpaRepository<User, String> {
 }

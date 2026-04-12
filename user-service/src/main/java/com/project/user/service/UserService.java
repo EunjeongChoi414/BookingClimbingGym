@@ -33,7 +33,7 @@ public class UserService {
 
         String hashedPassword = passwordEncoder.encode(password);
         User user = new User(email, hashedPassword, clock);
-        userRepository.create(user);
+        userRepository.save(user);
 
         AuthToken token = AuthToken.issue(user.getId(), jwtSecret, clock);
 

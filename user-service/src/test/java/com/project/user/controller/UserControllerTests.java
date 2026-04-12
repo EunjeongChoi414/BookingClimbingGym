@@ -45,7 +45,7 @@ class UserControllerTests {
     @DisplayName("자동 로그인 - 성공")
     public void autoLogin_success() throws Exception {
         User user = new User("test@test.com", "password", Clock.systemDefaultZone());
-        userRepository.create(user);
+        userRepository.save(user);
         var validToken = AuthToken.issue(user.getId(), TEST_JWT_SECRET, fixedClock).getToken();
 
         mockMvc.perform(get("/app/users/auto-login")

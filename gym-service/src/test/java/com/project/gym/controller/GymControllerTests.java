@@ -46,7 +46,7 @@ class GymControllerTests {
     @BeforeEach
     void setUp() {
         User user = new User("test@test.com", "password", Clock.systemDefaultZone());
-        userRepository.create(user);
+        userRepository.save(user);
         validToken = "Bearer " + AuthToken.issue(user.getId(), TEST_JWT_SECRET, Clock.fixed(Instant.now(), ZoneId.systemDefault())).getToken();
     }
 

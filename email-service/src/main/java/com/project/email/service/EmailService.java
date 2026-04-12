@@ -26,11 +26,11 @@ public class EmailService {
         Email newEmail = new Email(email);
         String code = newEmail.getCode();
         emailSender.send(email, code);
-        emailRepository.add(newEmail);
+        emailRepository.save(newEmail);
     }
 
     public String verifyEmail(String email, String code) {
-        Email savedEmail = emailRepository.findEmailById(email);
+        Email savedEmail = emailRepository.findById(email).orElse(null);
         if (!savedEmail.getCode().equals(code)) {
             throw new DomainException(ErrorCode.INVALID_EMAIL_CODE);
         } else {

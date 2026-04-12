@@ -2,18 +2,13 @@ package com.project.payment.service;
 
 import com.project.common.exception.DomainException;
 import com.project.common.exception.ErrorCode;
-import com.project.gym.entity.Gym;
-import com.project.gym.entity.Order;
-import com.project.gym.entity.Pass;
-import com.project.gym.entity.UserPass;
-import com.project.gym.entity.PaymentConfirmResult;
+import com.project.gym.entity.*;
+import com.project.gym.port.PaymentClient;
 import com.project.gym.repository.GymRepository;
 import com.project.gym.repository.UserPassRepository;
-import com.project.gym.repository.OrderRepository;
-import com.project.gym.port.PaymentClient;
-import com.project.user.repository.UserRepository;
 import com.project.payment.dto.ConfirmedPassModel;
 import com.project.payment.dto.PrepareOrderModel;
+import com.project.payment.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +22,6 @@ import java.time.LocalDateTime;
 public class PaymentService {
 
     private final GymRepository gymRepository;
-    private final UserRepository userRepository;
     private final UserPassRepository userPassRepository;
     private final OrderRepository orderRepository;
     private final PaymentClient tossPaymentClient;
@@ -35,13 +29,11 @@ public class PaymentService {
 
     public PaymentService(
             GymRepository gymRepository,
-            UserRepository userRepository,
             UserPassRepository userPassRepository,
             OrderRepository orderRepository,
             PaymentClient tossPaymentClient,
             Clock clock) {
         this.gymRepository = gymRepository;
-        this.userRepository = userRepository;
         this.userPassRepository = userPassRepository;
         this.orderRepository = orderRepository;
         this.tossPaymentClient = tossPaymentClient;
@@ -106,7 +98,7 @@ public class PaymentService {
         Pass pass = gym.getPassById(passId);
 
         UserPass userPass = new UserPass(pass, userId, LocalDate.now(clock));
-        userPassRepository.add(userPass);
+        userPassRepository.save(userPass);
 
         return new ConfirmedPassModel(
                 userPass.getId(),
