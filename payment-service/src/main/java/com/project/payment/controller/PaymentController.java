@@ -18,13 +18,12 @@ import java.util.Map;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/app/payment")
 public class PaymentController {
 
     private final PaymentService paymentService;
 
     // 토스페이먼츠 결제 성공 콜백
-    @GetMapping("/success")
+    @GetMapping("/app/payment/success")
     public String paymentSuccess(
             @RequestParam String paymentKey,
             @RequestParam String orderId,
@@ -38,7 +37,7 @@ public class PaymentController {
     }
 
     // 토스페이먼츠 결제 실패 콜백
-    @GetMapping("/fail")
+    @GetMapping("/app/payment/fail")
     public ResponseEntity<?> paymentFail(
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String message,
@@ -60,7 +59,7 @@ public class PaymentController {
 
     // Pass 카드 구매 — 1단계: 결제 준비 (orderId 발급)
     @JwtRequired
-    @PostMapping("prepare/gyms/{gymId}/passes/{passId}")
+    @PostMapping("/app/gyms/{gymId}/passes/{passId}/payment/prepare")
     public ApiResponse<PreparePaymentRes> preparePayment(
             @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
@@ -72,7 +71,7 @@ public class PaymentController {
 
     // Pass 카드 구매 — 2단계: 결제 확인 & UserPass 발급
     @JwtRequired
-    @PostMapping("confirm/app/gyms/{gymId}/passes/{passId}")
+    @PostMapping("/app/gyms/{gymId}/passes/{passId}/payment/confirm")
     public ApiResponse<ConfirmPaymentRes> confirmPayment(
             @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
