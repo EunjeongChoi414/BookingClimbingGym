@@ -1,6 +1,5 @@
 package com.project.gym.controller;
 
-import tools.jackson.databind.ObjectMapper;
 import com.project.common.jwt.AuthToken;
 import com.project.gym.GymTestApplication;
 import com.project.gym.dto.BusinessHours;
@@ -13,10 +12,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -46,7 +46,7 @@ class GymControllerTests {
     @BeforeEach
     void setUp() {
         User user = new User("test@test.com", "password", Clock.systemDefaultZone());
-        userRepository.create(user);
+        userRepository.save(user);
         validToken = "Bearer " + AuthToken.issue(user.getId(), TEST_JWT_SECRET, Clock.fixed(Instant.now(), ZoneId.systemDefault())).getToken();
     }
 
@@ -60,7 +60,7 @@ class GymControllerTests {
 
         mockMvc.perform(post("/app/gyms/business-verification")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer test-token")
+                        .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("true"))
@@ -80,7 +80,7 @@ class GymControllerTests {
 
         mockMvc.perform(post("/app/gyms/business-verification")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer test-token")
+                        .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
@@ -98,7 +98,7 @@ class GymControllerTests {
 
         mockMvc.perform(post("/app/gyms/business-verification")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer test-token")
+                        .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
@@ -166,7 +166,7 @@ class GymControllerTests {
 
         mockMvc.perform(post("/app/gyms")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer test-token")
+                        .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
@@ -198,7 +198,7 @@ class GymControllerTests {
 
         mockMvc.perform(post("/app/gyms")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer test-token")
+                        .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))

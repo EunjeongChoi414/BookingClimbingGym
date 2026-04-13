@@ -1,11 +1,12 @@
 package com.project.gym.entity;
 
-import com.project.gym.exception.InvalidPassException;
-import com.project.gym.exception.NoRemainingUsesException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.Getter;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -14,16 +15,21 @@ import java.util.UUID;
 
 @Entity
 public class UserPass {
+    @Getter
     @Id
     private String id;
 
+    @Getter
     @ManyToOne
     @JoinColumn(name = "pass_id")
     private Pass pass;
 
+    @Getter
     private String userId;
 
+    @Getter
     private LocalDate validFrom;
+    @Getter
     private LocalDate validUntil;
     private Integer remainingUses;
     private LocalDateTime lastUsedAt;
@@ -40,33 +46,17 @@ public class UserPass {
         this.remainingUses = pass.getMaxUses();
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public Pass getPass() {
-        return pass;
-    }
-
-    public LocalDate getValidFrom() {
-        return validFrom;
-    }
-
-    public LocalDate getValidUntil() {
-        return validUntil;
-    }
-
     public int getRemainingUses() {
         return remainingUses;
     }
 
     public void validate(Clock clock) {
         if (remainingUses <= 0) {
-            throw new NoRemainingUsesException();
+            throw new DomainException(ErrorCode.NO_REMAINING_USES);
         }
         LocalDate now = LocalDate.now(clock);
         if (now.isAfter(validUntil) || now.isBefore(validFrom)) {
-            throw new InvalidPassException();
+            throw new DomainException(ErrorCode.INVALID_PASS);
         }
     }
 
@@ -76,11 +66,4 @@ public class UserPass {
         lastUsedAt = LocalDateTime.now();
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public LocalDateTime getLastUsedAt() {
-        return lastUsedAt;
-    }
 }

@@ -1,18 +1,26 @@
 package com.project.gym.repository;
 
 import com.project.gym.entity.Booking;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface BookingRepository {
-    void add(Booking booking);
+public interface BookingRepository extends JpaRepository<Booking, String> {
 
-    List<Booking> getAllBy(String gymId);
+    List<Booking> findAllByGym_Id(String gymId);
 
-    int getGymBookingCount(String gymId, LocalDateTime dateTime);
+    long countByGym_IdAndBookedDateTime(String gymId, LocalDateTime dateTime);
 
-    void delete(Booking booking);
+    default List<Booking> getAllBy(String gymId) {
+        return findAllByGym_Id(gymId);
+    }
 
-    Booking getById(String id);
+    default int getGymBookingCount(String gymId, LocalDateTime dateTime) {
+        return (int) countByGym_IdAndBookedDateTime(gymId, dateTime);
+    }
+
+    default Booking getById(String id) {
+        return findById(id).orElseThrow();
+    }
 }

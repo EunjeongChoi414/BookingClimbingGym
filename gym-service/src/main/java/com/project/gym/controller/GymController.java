@@ -1,10 +1,9 @@
 package com.project.gym.controller;
 
+import com.project.common.jwt.JwtRequired;
+import com.project.common.response.ApiResponse;
 import com.project.gym.dto.*;
-import com.project.common.response.BaseResponse;
-import com.project.common.response.ResponseService;
 import com.project.gym.service.GymService;
-import com.project.user.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -19,52 +18,47 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GymController {
 
-    private final ResponseService responseService = new ResponseService();
     private final GymService gymService;
-    private final UserService userService;
 
     //관리자 api: 사업자 정보 인증하기
     @PostMapping("/business-verification")
-    public BaseResponse<String> verifyBusiness(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<String> verifyBusiness(
             @RequestBody @Valid VerifyBusinessReq req) {
 
         String ticket = gymService.verifyBusiness(req.getBusinessRegistrationNumber(), req.getLegalRepresentativeName(), req.getBusinessStartDate());
 
-        return responseService.getSuccessResponse(ticket);
+        return ApiResponse.success(ticket);
     }
 
     //관리자 api: 정산 계좌 인증하기
     @PostMapping("/payment-account-verification")
-    public BaseResponse<String> paymentAccountVerification(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<Void> paymentAccountVerification(
             @RequestBody @Valid PaymentAccountVerificationReq req
     ) {
         gymService.verifyBusinessRepresentative(
                 req.getTicket(), req.getAccountHolderName(), req.getBankName(), req.getAccountNumber());
 
-        return responseService.getSuccessResponse();
+        return ApiResponse.success();
     }
 
     //관리자 api: 암장 등록하기
+    @JwtRequired
     @PostMapping("")
-    public BaseResponse<String> registerGym(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<String> registerGym(
+            @RequestAttribute(name = "userId") String userId,
             @RequestBody @Valid RegisterGymReq req) {
         List<BusinessHoursModel> businessHoursModels = GymDtoMapper.toBusinessHoursModels(req.getBusinessHours());
         List<PassModel> passInputs = GymDtoMapper.toPassModels(req.getPasses());
 
-        String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         String gymId = gymService.registerGym(req.getGymName(), req.getGymAddress(), req.getContact(),
                 businessHoursModels, passInputs, userId, req.getMaxCapacity(), req.getCancellationNoticeDays());
 
-        return responseService.getSuccessResponse(gymId);
+        return ApiResponse.success(gymId);
     }
 
     //암장 필터로 조회하기
     @GetMapping("")
-    public BaseResponse<GetGymsRes> getGyms(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<GetGymsRes> getGyms(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(30) int size,
             @RequestParam(required = false) String keyword) {
@@ -76,13 +70,12 @@ public class GymController {
             gyms.add(new Gym(gym.name(), businessHours, gym.currentCrowdLevel(), gym.address()));
         });
 
-        return responseService.getSuccessResponse(new GetGymsRes(gyms));
+        return ApiResponse.success(new GetGymsRes(gyms));
     }
 
     //특정 암장 상세 정보
     @GetMapping("/{gymId}")
-    public BaseResponse<GetGymDetailRes> getGymDetail(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<GetGymDetailRes> getGymDetail(
             @PathVariable String gymId) {
 
         GymDetailModel gymDetail = gymService.getGymDetail(gymId);
@@ -97,55 +90,51 @@ public class GymController {
                 passes,
                 gymDetail.contact());
 
-        return responseService.getSuccessResponse(res);
+        return ApiResponse.success(res);
     }
 
     //특정 암장에 대한 유저 정보
+    @JwtRequired
     @GetMapping("/{gymId}/me")
-    public BaseResponse<GetGymMyDetailRes> getGymMyDetail(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<GetGymMyDetailRes> getGymMyDetail(
+            @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId
     ) {
-        String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         UserGymModel userGymModel = gymService.getUserInfoFromGym(gymId, userId);
 
-        return responseService.getSuccessResponse(GetGymMyDetailRes.from(userGymModel));
+        return ApiResponse.success(GetGymMyDetailRes.from(userGymModel));
     }
 
     //특정 날짜 & 시간대의 바쁜 정도 (예약 정도) 조회
     @GetMapping("/{gymId}/crowdedness")
-    public BaseResponse<String> getGymCrowdedness(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<String> getGymCrowdedness(
             @PathVariable String gymId,
             @RequestBody @Valid GetGymCrowdednessReq req) {
 
         String crowdedness = gymService.getCrowdedness(gymId, req.getDateTime());
 
-        return responseService.getSuccessResponse(crowdedness);
+        return ApiResponse.success(crowdedness);
     }
 
     //관리자 api: 암장 결제 건들 보여주기
+    @JwtRequired
     @GetMapping("/{gymId}/bookings")
-    public BaseResponse<GetGymBookingsRes> getGymBookings(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<GetGymBookingsRes> getGymBookings(
+            @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId) {
-        String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
         List<BookingModel> bookingModels = gymService.getGymBookings(userId, gymId);
-
         List<Booking> bookings = GymDtoMapper.toBookingDtos(bookingModels);
 
-        return responseService.getSuccessResponse(new GetGymBookingsRes(bookings));
+        return ApiResponse.success(new GetGymBookingsRes(bookings));
     }
 
     //패스로 결제하기
+    @JwtRequired
     @PostMapping("/{gymId}/pass-redemption")
-    public BaseResponse<PayWithPassRes> payWithPass(
-            @RequestHeader("Authorization") String token,
+    public ApiResponse<PayWithPassRes> payWithPass(
+            @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
             @RequestBody @Valid PayWithPassReq req) {
-
-        String userId = userService.getUserIdFromToken(token.substring("Bearer ".length()));
-
         BookedWithPassModel bookedWithPassModel = gymService.bookGymWithPass(userId, gymId, req.getPassId(), req.getStartDateTime());
 
         var res = new PayWithPassRes(
@@ -153,6 +142,6 @@ public class GymController {
                 bookedWithPassModel.remainingUses(),
                 bookedWithPassModel.qrToken());
 
-        return responseService.getSuccessResponse(res);
+        return ApiResponse.success(res);
     }
 }

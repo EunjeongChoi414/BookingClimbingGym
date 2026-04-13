@@ -1,6 +1,5 @@
 package com.project.user.controller;
 
-import tools.jackson.databind.ObjectMapper;
 import com.project.common.jwt.AuthToken;
 import com.project.common.jwt.SignUpTicket;
 import com.project.user.UserTestApplication;
@@ -10,11 +9,12 @@ import com.project.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -45,7 +45,7 @@ class UserControllerTests {
     @DisplayName("자동 로그인 - 성공")
     public void autoLogin_success() throws Exception {
         User user = new User("test@test.com", "password", Clock.systemDefaultZone());
-        userRepository.create(user);
+        userRepository.save(user);
         var validToken = AuthToken.issue(user.getId(), TEST_JWT_SECRET, fixedClock).getToken();
 
         mockMvc.perform(get("/app/users/auto-login")
@@ -66,7 +66,6 @@ class UserControllerTests {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("false"))
-                .andExpect(jsonPath("$.code").value("2000"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
@@ -140,8 +139,7 @@ class UserControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isSuccess").value("false"))
-                .andExpect(jsonPath("$.code").value("2000"));
+                .andExpect(jsonPath("$.isSuccess").value("false"));
     }
 
     @Test

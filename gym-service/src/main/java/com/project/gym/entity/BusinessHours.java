@@ -1,6 +1,7 @@
 package com.project.gym.entity;
 
-import com.project.gym.exception.InvalidBusinessHoursException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -15,7 +16,8 @@ public class BusinessHours {
     private LocalTime startTime;
     private LocalTime endTime;
 
-    protected BusinessHours() {}
+    protected BusinessHours() {
+    }
 
     public BusinessHours(DayOfWeek day, LocalTime startTime, LocalTime endTime) {
         this.day = day;
@@ -41,7 +43,7 @@ public class BusinessHours {
             var end = bh.getEndTime();
             if (start == null && end == null) continue;
             if (start == null || end == null || end.isBefore(start)) {
-                throw new InvalidBusinessHoursException();
+                throw new DomainException(ErrorCode.INVALID_BUSINESS_HOURS);
             }
         }
     }

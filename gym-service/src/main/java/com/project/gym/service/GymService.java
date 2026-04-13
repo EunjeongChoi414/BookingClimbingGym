@@ -60,7 +60,7 @@ public class GymService {
         Gym gym = new Gym(
                 name, address, contact, domainBusinessHours, domainPasses, userId,
                 maxCapacity, cancellationNoticeDays);
-        gymRepository.add(gym);
+        gymRepository.save(gym);
         userService.setManager(userId);
 
         return gym.getId();
@@ -106,7 +106,7 @@ public class GymService {
 
         Gym gym = gymRepository.getById(gymId);
         Booking booking = new Booking(userId, gym, userPassId, startDateTime, userPass, clock);
-        bookingRepository.add(booking);
+        bookingRepository.save(booking);
 
         return new BookedWithPassModel(booking.getId(), userPass.getRemainingUses(), booking.getQrToken());
     }

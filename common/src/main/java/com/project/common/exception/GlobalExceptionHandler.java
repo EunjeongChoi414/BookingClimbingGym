@@ -1,30 +1,27 @@
 package com.project.common.exception;
 
-import com.project.common.response.BaseResponse;
-import com.project.common.response.ResponseService;
+import com.project.common.response.ApiResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    private final ResponseService responseService = new ResponseService();
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public BaseResponse<String> handleArgumentException(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
-        return responseService.getArgumentFailedResponse(message);
+    public ApiResponse<Void> handleArgumentException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
+        return ApiResponse.fail(ErrorCode.INVALID_REQUEST.getCode(), message);
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
-    public BaseResponse<String> handleExpiredJwtException(ExpiredJwtException e) {
-        return responseService.getFailureResponse(ExceptionStatus.EXPIRED_TOKEN);
+    public ApiResponse<Void> handleExpiredJwtException(ExpiredJwtException e) {
+        return ApiResponse.fail(ErrorCode.EXPIRED_TOKEN);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public BaseResponse<String> handleDomainException(RuntimeException e) {
-        return responseService.getFailureResponse(e.getMessage());
+    @ExceptionHandler(DomainException.class)
+    public ApiResponse<Void> handleDomainException(DomainException e) {
+        return ApiResponse.fail(e.getErrorCode());
     }
 }

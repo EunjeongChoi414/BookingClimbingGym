@@ -1,11 +1,9 @@
 package com.project.user.service;
 
-import com.project.common.jwt.AuthToken;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import com.project.user.dto.RegisteredUserInfo;
 import com.project.user.entity.User;
-import com.project.user.exception.NeedToLoginAgainException;
-import com.project.user.exception.NeedToSignupException;
-import com.project.user.exception.PasswordMismatchException;
 import com.project.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -55,35 +52,26 @@ class UserServiceTests {
         String password = "password";
         String passwordConfirm = "not-matched-password";
 
-        assertThrows(PasswordMismatchException.class, () -> {
+        DomainException ex = assertThrows(DomainException.class, () -> {
             sut.registerUser(email, password, passwordConfirm);
         });
+        assertEquals(ErrorCode.PASSWORD_NOT_MATCH, ex.getErrorCode());
     }
 
     @Test
     void loginUser() {
         User user = new User("user@example.com", "password", fixedClock);
-        userRepository.create(user);
         when(userRepository.getById(user.getId())).thenReturn(user);
-        String userToken = AuthToken.issue(user.getId(), SECRET, fixedClock).getToken();
 
-        String loggedInUserId = sut.loginUser(userToken);
+        String loggedInUserId = sut.loginUser(user.getId());
 
         assertEquals(user.getId(), loggedInUserId);
         assertEquals(user.getLastLoginAt(), LocalDateTime.now(fixedClock));
     }
 
     @Test
-    void loginUser_failsWhenTokenExpired() {
-        Clock pastClock = Clock.fixed(Instant.now(fixedClock).minus(31, ChronoUnit.DAYS), ZoneId.systemDefault());
-        User user = new User("user@example.com", "password", pastClock);
-        String userToken = AuthToken.issue(user.getId(), SECRET, pastClock).getToken();
-
-        assertThrows(NeedToLoginAgainException.class, () -> sut.loginUser(userToken));
-    }
-
-    @Test
-    void loginUser_failsWhenTokenNotExist() {
-        assertThrows(NeedToSignupException.class, () -> sut.loginUser(null));
+    void loginUser_failsWhenUserIdNotExist() {
+        DomainException ex = assertThrows(DomainException.class, () -> sut.loginUser(null));
+        assertEquals(ErrorCode.NEED_TO_SIGNUP, ex.getErrorCode());
     }
 }

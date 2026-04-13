@@ -1,9 +1,9 @@
 package com.project.email.service;
 
-import com.project.common.exception.NeedEmailVerificationException;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import com.project.common.jwt.SignUpTicket;
 import com.project.email.entity.Email;
-import com.project.email.exception.EmailCodeMismatchException;
 import com.project.email.port.EmailSender;
 import com.project.email.repository.EmailRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -36,7 +38,7 @@ class EmailServiceTests {
     void verifyEmail() {
         String emailAddress = "user@example.com";
         Email email = new Email(emailAddress);
-        when(emailRepository.findEmailById(email.getId())).thenReturn(email);
+        when(emailRepository.findById(email.getId())).thenReturn(Optional.of(email));
         String code = email.getCode();
 
         String ticket = sut.verifyEmail(emailAddress, code);
@@ -49,10 +51,11 @@ class EmailServiceTests {
         String emailAddress = "user@example.com";
         Email email = new Email(emailAddress);
         String code = "wrong-code";
-        when(emailRepository.findEmailById(email.getId())).thenReturn(email);
+        when(emailRepository.findById(email.getId())).thenReturn(Optional.of(email));
 
-        assertThrows(EmailCodeMismatchException.class,
+        DomainException ex = assertThrows(DomainException.class,
                 () -> sut.verifyEmail(emailAddress, code));
+        assertEquals(ErrorCode.INVALID_EMAIL_CODE, ex.getErrorCode());
     }
 
     @Test
@@ -68,7 +71,8 @@ class EmailServiceTests {
         String ticket = SignUpTicket.issue("other@example.com", SECRET).getToken();
         String email = "user@example.com";
 
-        assertThrows(NeedEmailVerificationException.class,
+        DomainException ex = assertThrows(DomainException.class,
                 () -> sut.checkIfEmailVerified(ticket, email));
+        assertEquals(ErrorCode.NEED_EMAIL_VERIFICATION, ex.getErrorCode());
     }
 }

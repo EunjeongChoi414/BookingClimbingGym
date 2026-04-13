@@ -1,9 +1,7 @@
 package com.project.gym.entity;
 
-import com.project.gym.exception.BookingCannotBeCancelledException;
-import com.project.gym.exception.InvalidBookingException;
-import com.project.gym.entity.Gym;
-import com.project.gym.entity.UserPass;
+import com.project.common.exception.DomainException;
+import com.project.common.exception.ErrorCode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -75,13 +73,13 @@ public class Booking {
     public void cancel(LocalDateTime now, int cancellationNoticeDays) {
         isValid(now);
         if (!bookedDateTime.minusDays(cancellationNoticeDays).isAfter(now)) {
-            throw new BookingCannotBeCancelledException();
+            throw new DomainException(ErrorCode.BOOKING_CANNOT_BE_CANCELLED);
         }
     }
 
     private void isValid(LocalDateTime now) {
         if (!now.isBefore(bookedDateTime)) {
-            throw new InvalidBookingException();
+            throw new DomainException(ErrorCode.INVALID_BOOKING);
         }
     }
 }
