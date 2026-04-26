@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class GymService {
@@ -129,12 +130,14 @@ public class GymService {
         return level.toString();
     }
 
-    public String verifyBusiness(
+    // 외부 사업자 검증 API 호출이 블로킹이므로 비동기로 처리한다.
+    public CompletableFuture<String> verifyBusiness(
             String businessRegistrationNumber, String representativeName, LocalDate businessStartDate) {
-        businessVerifier.verifyBusiness(businessRegistrationNumber, representativeName, businessStartDate);
-        BusinessRegistrationTicket ticket = BusinessRegistrationTicket.issue(representativeName, jwtSecret);
-
-        return ticket.getToken();
+        return CompletableFuture.supplyAsync(() -> {
+            businessVerifier.verifyBusiness(businessRegistrationNumber, representativeName, businessStartDate);
+            BusinessRegistrationTicket ticket = BusinessRegistrationTicket.issue(representativeName, jwtSecret);
+            return ticket.getToken();
+        });
     }
 
     public void verifyBusinessRepresentative(

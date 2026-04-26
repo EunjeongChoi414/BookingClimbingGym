@@ -2,7 +2,10 @@ package com.project.gym.controller;
 
 import com.project.common.jwt.JwtRequired;
 import com.project.common.response.ApiResponse;
-import com.project.gym.dto.*;
+import com.project.gym.dto.ConfirmPaymentReq;
+import com.project.gym.dto.ConfirmPaymentRes;
+import com.project.gym.dto.PrepareOrderModel;
+import com.project.gym.dto.PreparePaymentRes;
 import com.project.gym.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 결제 관련 컨트롤러
@@ -73,16 +77,15 @@ public class PaymentController {
     // Pass 카드 구매 — 2단계: 결제 확인 & UserPass 발급
     @JwtRequired
     @PostMapping("confirm/app/gyms/{gymId}/passes/{passId}")
-    public ApiResponse<ConfirmPaymentRes> confirmPayment(
+    public CompletableFuture<ApiResponse<ConfirmPaymentRes>> confirmPayment(
             @RequestAttribute(name = "userId") String userId,
             @PathVariable String gymId,
             @PathVariable String passId,
             @RequestBody @Valid ConfirmPaymentReq req) {
 
-        ConfirmedPassModel model = paymentService.confirmOrder(
-                userId, gymId, passId, req.paymentKey(), req.orderId(), req.amount());
-
-        return ApiResponse.success(
-                new ConfirmPaymentRes(model.userPassId(), model.passName(), model.validUntil(), model.remainingUses()));
+        return paymentService.confirmOrder(
+                        userId, gymId, passId, req.paymentKey(), req.orderId(), req.amount())
+                .thenApply(model -> ApiResponse.success(
+                        new ConfirmPaymentRes(model.userPassId(), model.passName(), model.validUntil(), model.remainingUses())));
     }
 }

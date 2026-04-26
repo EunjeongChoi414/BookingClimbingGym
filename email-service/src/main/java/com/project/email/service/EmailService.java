@@ -1,13 +1,15 @@
 package com.project.email.service;
 
-import com.project.common.jwt.SignUpTicket;
-import com.project.email.entity.Email;
 import com.project.common.exception.DomainException;
 import com.project.common.exception.ErrorCode;
-import com.project.email.repository.EmailRepository;
+import com.project.common.jwt.SignUpTicket;
+import com.project.email.entity.Email;
 import com.project.email.port.EmailSender;
+import com.project.email.repository.EmailRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class EmailService {
@@ -22,11 +24,15 @@ public class EmailService {
         this.secret = secret;
     }
 
-    public void sendVerificationCode(String email) {
-        Email newEmail = new Email(email);
-        String code = newEmail.getCode();
-        emailSender.send(email, code);
-        emailRepository.save(newEmail);
+    // SMTP 전송이 블로킹이므로 비동기로 처리한다.
+    public CompletableFuture<Void> sendVerificationCode(String email) {
+        return CompletableFuture.supplyAsync(() -> {
+            Email newEmail = new Email(email);
+            String code = newEmail.getCode();
+            emailSender.send(email, code);
+            emailRepository.save(newEmail);
+            return null;
+        });
     }
 
     public String verifyEmail(String email, String code) {

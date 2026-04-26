@@ -12,10 +12,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.concurrent.CompletableFuture;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EmailController.class)
@@ -34,11 +41,18 @@ public class EmailControllerTests {
     @Test
     @DisplayName("이메일 인증코드 발송 - 성공")
     void sendEmailVerificationCode_success() throws Exception {
+        when(emailService.sendVerificationCode(anyString()))
+                .thenReturn(CompletableFuture.completedFuture(null));
+
         var req = new SendEmailVerificationCodeReq("test@gmail.com");
 
-        mockMvc.perform(post("/app/email/code")
+        MvcResult mvcResult = mockMvc.perform(post("/app/email/code")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("true"))
                 .andExpect(jsonPath("$.code").value("1000"))

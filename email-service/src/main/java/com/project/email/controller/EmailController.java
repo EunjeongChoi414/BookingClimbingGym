@@ -6,7 +6,12 @@ import com.project.email.dto.VerifyEmailReq;
 import com.project.email.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/app/email")
@@ -17,12 +22,10 @@ public class EmailController {
 
     //이메일 인증코드 발송
     @PostMapping("/code")
-    public ApiResponse<Void> sendEmailVerificationCode(
+    public CompletableFuture<ApiResponse<Void>> sendEmailVerificationCode(
             @RequestBody @Valid SendEmailVerificationCodeReq req) {
 
-        emailService.sendVerificationCode(req.getEmail());
-
-        return ApiResponse.success();
+        return emailService.sendVerificationCode(req.getEmail()).thenApply(ApiResponse::success);
     }
 
     //이메일 인증코드 확인

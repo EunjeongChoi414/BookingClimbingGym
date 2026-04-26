@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
@@ -23,8 +24,10 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = GymTestApplication.class)
@@ -58,10 +61,14 @@ class GymControllerTests {
                 "최은정",
                 LocalDate.of(2010, 10, 10));
 
-        mockMvc.perform(post("/app/gyms/business-verification")
+        MvcResult mvcResult = mockMvc.perform(post("/app/gyms/business-verification")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", validToken)
                         .content(objectMapper.writeValueAsString(req)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value("true"))
                 .andExpect(jsonPath("$.code").value("1000"))
