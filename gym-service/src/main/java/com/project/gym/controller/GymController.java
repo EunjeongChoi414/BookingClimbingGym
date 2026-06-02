@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/app/gyms")
@@ -22,12 +23,14 @@ public class GymController {
 
     //관리자 api: 사업자 정보 인증하기
     @PostMapping("/business-verification")
-    public ApiResponse<String> verifyBusiness(
+    public CompletableFuture<ApiResponse<String>> verifyBusiness(
             @RequestBody @Valid VerifyBusinessReq req) {
 
-        String ticket = gymService.verifyBusiness(req.getBusinessRegistrationNumber(), req.getLegalRepresentativeName(), req.getBusinessStartDate());
-
-        return ApiResponse.success(ticket);
+        return gymService.verifyBusiness(
+                        req.getBusinessRegistrationNumber(),
+                        req.getLegalRepresentativeName(),
+                        req.getBusinessStartDate())
+                .thenApply(ApiResponse::success);
     }
 
     //관리자 api: 정산 계좌 인증하기

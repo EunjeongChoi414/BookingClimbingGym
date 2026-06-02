@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class PaymentService {
@@ -65,46 +66,48 @@ public class PaymentService {
     /**
      * 2단계: 결제 확인 & UserPass 발급
      * - 위변조 방지 검증 (userId, amount)
-     * - 토스 confirm API 호출 (트랜잭션 외부)
+     * - 토스 confirm API 호출 (외부 HTTP, 블로킹 → 비동기 처리)
      * - Order 완료 처리 & UserPass 생성
      */
-    public ConfirmedPassModel confirmOrder(
+    public CompletableFuture<ConfirmedPassModel> confirmOrder(
             String userId, String gymId, String passId,
             String paymentKey, String orderId, BigDecimal clientAmount) {
 
-        // 1. 위변조 방지 검증 (userId, amount, status, 만료 여부)
-        Order order = orderRepository.getById(orderId);
-        try {
-            order.validateForConfirm(userId, clientAmount, LocalDateTime.now(clock));
-        } catch (DomainException e) {
-            fail(order);
-            throw e;
-        }
+        return CompletableFuture.supplyAsync(() -> {
+            // 1. 위변조 방지 검증 (userId, amount, status, 만료 여부)
+            Order order = orderRepository.getById(orderId);
+            try {
+                order.validateForConfirm(userId, clientAmount, LocalDateTime.now(clock));
+            } catch (DomainException e) {
+                fail(order);
+                throw e;
+            }
 
-        //2. 토스 confirm API 호출 — DB 저장값(order.getAmount()) 사용 (클라이언트값 미사용)
-        PaymentConfirmResult result = tossPaymentClient.confirm(paymentKey, orderId, order.getAmount());
+            //2. 토스 confirm API 호출 — DB 저장값(order.getAmount()) 사용 (클라이언트값 미사용)
+            PaymentConfirmResult result = tossPaymentClient.confirm(paymentKey, orderId, order.getAmount());
 
-        if (!result.isSuccess()) {
-            fail(order);
-            throw new DomainException(ErrorCode.PAYMENT_FAILED);
-        }
+            if (!result.isSuccess()) {
+                fail(order);
+                throw new DomainException(ErrorCode.PAYMENT_FAILED);
+            }
 
-        // 3. 결제 완료 처리
-        order.complete(paymentKey, result.getReceiptUrl());
-        orderRepository.save(order);
+            // 3. 결제 완료 처리
+            order.complete(paymentKey, result.getReceiptUrl());
+            orderRepository.save(order);
 
-        // 4. UserPass 발급
-        Gym gym = gymRepository.getById(gymId);
-        Pass pass = gym.getPassById(passId);
+            // 4. UserPass 발급
+            Gym gym = gymRepository.getById(gymId);
+            Pass pass = gym.getPassById(passId);
 
-        UserPass userPass = new UserPass(pass, userId, LocalDate.now(clock));
-        userPassRepository.save(userPass);
+            UserPass userPass = new UserPass(pass, userId, LocalDate.now(clock));
+            userPassRepository.save(userPass);
 
-        return new ConfirmedPassModel(
-                userPass.getId(),
-                pass.getName(),
-                userPass.getValidUntil(),
-                userPass.getRemainingUses());
+            return new ConfirmedPassModel(
+                    userPass.getId(),
+                    pass.getName(),
+                    userPass.getValidUntil(),
+                    userPass.getRemainingUses());
+        });
     }
 
     public void confirmFailOrder(String orderId) {
